@@ -1,4 +1,3 @@
-
 name: Build AHZNB MiniVillages
 
 on:
@@ -19,14 +18,20 @@ jobs:
           distribution: temurin
           java-version: '8'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+      # ForgeGradle 2.3 for Minecraft 1.12.2 is an old build setup.
+      # Use Gradle 4.10.3 instead of the runner's current Gradle 9.x.
+      - name: Set up Gradle 4.10.3
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: '4.10.3'
 
       - name: Build mod
         run: gradle build --no-daemon
 
       - name: Upload JAR
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: AHZNB-MiniVillages
           path: build/libs/*.jar
+          if-no-files-found: error
