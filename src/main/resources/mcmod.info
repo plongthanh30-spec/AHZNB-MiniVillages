@@ -1,0 +1,10 @@
+[
+  {
+    "modid": "ahznbminivillages",
+    "name": "AHZNB MiniVillages",
+    "description": "Mini Naruto villages with loot chests",
+    "version": "1.0",
+    "mcversion": "1.12.2",
+    "dependencies": ["ahznb"]
+  }
+]
