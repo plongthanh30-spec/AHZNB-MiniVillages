@@ -12,8 +12,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
-import net.minecraft.world.gen.IWorldGenerator;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.IWorldGenerator;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -49,8 +49,6 @@ public class AHZNBMiniVillages {
                              IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
             if (world.isRemote || world.provider.getDimension() != 0) return;
 
-            // Approximate density by area: expected one site per spacingBlocks^2 area.
-            // The realized nearest-neighbor distance varies with terrain and random placement.
             double chancePerChunk = Math.min(1.0, 256.0 / (spacingBlocks * (double) spacingBlocks));
             if (random.nextDouble() >= chancePerChunk) return;
 
@@ -83,28 +81,26 @@ public class AHZNBMiniVillages {
             IBlockState floor;
             IBlockState accent;
             switch (type) {
-                case 0: // Leaf
+                case 0:
                     wall = Blocks.PLANKS.getStateFromMeta(0); roof = Blocks.LEAVES.getDefaultState();
                     floor = Blocks.PLANKS.getStateFromMeta(0); accent = Blocks.LOG.getDefaultState(); break;
-                case 1: // Sand
+                case 1:
                     wall = Blocks.SANDSTONE.getDefaultState(); roof = Blocks.SANDSTONE.getStateFromMeta(2);
                     floor = Blocks.SANDSTONE.getDefaultState(); accent = Blocks.DEADBUSH.getDefaultState(); break;
-                case 2: // Mist
+                case 2:
                     wall = Blocks.STONEBRICK.getDefaultState(); roof = Blocks.PRISMARINE.getDefaultState();
                     floor = Blocks.STONEBRICK.getDefaultState(); accent = Blocks.PACKED_ICE.getDefaultState(); break;
-                case 3: // Cloud
+                case 3:
                     wall = Blocks.QUARTZ_BLOCK.getDefaultState(); roof = Blocks.STAINED_GLASS.getStateFromMeta(7);
                     floor = Blocks.QUARTZ_BLOCK.getDefaultState(); accent = Blocks.IRON_BLOCK.getDefaultState(); break;
-                default: // Sound
+                default:
                     wall = Blocks.NETHER_BRICK.getDefaultState(); roof = Blocks.NETHER_BRICK.getDefaultState();
                     floor = Blocks.NETHER_BRICK.getDefaultState(); accent = Blocks.OBSIDIAN.getDefaultState(); break;
             }
 
-            // Ground pad 11x11.
             for (int dx = -5; dx <= 5; dx++) for (int dz = -5; dz <= 5; dz++) {
                 world.setBlockState(p.add(dx, -1, dz), floor, 2);
             }
-            // Four small huts around a central chest plaza.
             hut(world, p.add(-3, 0, -3), wall, roof, accent, random);
             hut(world, p.add(3, 0, -3), wall, roof, accent, random);
             hut(world, p.add(-3, 0, 3), wall, roof, accent, random);
@@ -112,7 +108,6 @@ public class AHZNBMiniVillages {
             world.setBlockState(p, Blocks.CHEST.getDefaultState(), 2);
             if (world.getTileEntity(p) instanceof TileEntityChest) fillChest((TileEntityChest) world.getTileEntity(p), random);
             world.setBlockState(p.add(0, 1, 0), Blocks.TORCH.getDefaultState(), 2);
-            // Small marker tower.
             for (int dy = 0; dy < 3; dy++) world.setBlockState(p.add(0, dy, -5), accent, 2);
             world.setBlockState(p.add(0, 3, -5), Blocks.GLOWSTONE.getDefaultState(), 2);
         }
@@ -139,7 +134,6 @@ public class AHZNBMiniVillages {
             put(chest, new ItemStack(Items.EXPERIENCE_BOTTLE, 2 + random.nextInt(5)), random);
             put(chest, new ItemStack(Items.ARROW, 8 + random.nextInt(17)), random);
 
-            // AHZNB items are only inserted when the exact registry ID is present in config.
             for (String raw : ahznbLoot) {
                 if (random.nextBoolean()) {
                     String[] parts = raw.trim().split("@");
@@ -166,4 +160,4 @@ public class AHZNBMiniVillages {
             }
         }
     }
-                                }
+}
