@@ -126,13 +126,13 @@ public class AHZNBMiniVillages {
         }
 
         private boolean isMostlyClear(World world, BlockPos p) {
-            // Sample the area instead of checking every block to keep world generation light.
-            for (int dx = -32; dx <= 32; dx += 16) {
-                for (int dz = -32; dz <= 32; dz += 16) {
+            // Relaxed terrain filter: accept most natural surfaces and do not reject trees/grass above ground.
+            // This changes terrain eligibility, not the per-chunk village attempt probability.
+            for (int dx = -24; dx <= 24; dx += 24) {
+                for (int dz = -24; dz <= 24; dz += 24) {
                     Block b = world.getBlockState(p.add(dx, -1, dz)).getBlock();
-                    if (b != Blocks.GRASS && b != Blocks.DIRT && b != Blocks.SAND &&
-                        b != Blocks.STONE && b != Blocks.GRAVEL) return false;
-                    if (!world.isAirBlock(p.add(dx, 1, dz))) return false;
+                    if (b == Blocks.BEDROCK || b == Blocks.WATER || b == Blocks.FLOWING_WATER ||
+                        b == Blocks.LAVA || b == Blocks.FLOWING_LAVA) return false;
                 }
             }
             return true;
@@ -178,6 +178,7 @@ public class AHZNBMiniVillages {
             for (int i=0; i<homes.length; i++) {
                 BlockPos house = p.add(homes[i][0], 0, homes[i][1]);
                 buildNinjaHouse(world, house, wall, roof, accent, random, type);
+                buildDistinctVillageArchitecture(world, house, wall, roof, accent, type, random);
                 // Small style variations: porch pillars, flower beds and side lamps.
                 if (i%3==0) world.setBlockState(house.add(0,3,-6), accent, 2);
                 if (i%3==1) world.setBlockState(house.add(0,3,6), Blocks.GLOWSTONE.getDefaultState(), 2);
@@ -329,6 +330,12 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(0,6,0), Blocks.GLOWSTONE.getDefaultState(), 2);
             world.setBlockState(p.add(-3,6,0), Blocks.TORCH.getDefaultState(), 2);
             world.setBlockState(p.add(3,6,0), Blocks.TORCH.getDefaultState(), 2);
+            // Ten dedicated upper-floor lights, evenly distributed around the second-storey interior.
+            int[][] upperLights = {{-3,1},{-1,1},{1,1},{3,1},{-3,-1},{-1,-1},{1,-1},{3,-1},{-2,3},{2,3}};
+            for (int[] light : upperLights) {
+                world.setBlockState(p.add(light[0],6,light[1]), Blocks.GLOWSTONE.getDefaultState(), 2);
+            }
+
 
             // Two separate beds, plus work area, shelves and carpet.
             world.setBlockState(p.add(-3,1,2), Blocks.BED.getStateFromMeta(0), 2);
@@ -416,26 +423,39 @@ public class AHZNBMiniVillages {
         }
 
         private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
-            // Grand shinobi gate positioned 67 blocks from the village center.
-            // Large ceremonial entrance gate with lanterns and a tiled canopy.
-            for (int y=0; y<=10; y++) {
-                world.setBlockState(p.add(-7,y,0), accent, 2);
-                world.setBlockState(p.add(7,y,0), accent, 2);
+            // Monumental gate: twin towers, layered roof, lit arch and connected defensive walls.
+            for (int side : new int[]{-1,1}) {
+                int x=side*7;
+                for (int y=0; y<=12; y++) {
+                    world.setBlockState(p.add(x,y,0), accent, 2);
+                    world.setBlockState(p.add(x+side*2,y,0), accent, 2);
+                }
+                for (int dx=-2; dx<=2; dx++) for (int dz=-2; dz<=2; dz++)
+                    world.setBlockState(p.add(x+dx,13, dz), roof, 2);
+                world.setBlockState(p.add(x,14,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,10,-2), Blocks.GLOWSTONE.getDefaultState(), 2);
             }
-            for (int y=0; y<=6; y++) {
-                world.setBlockState(p.add(-5,y,0), accent, 2);
-                world.setBlockState(p.add(5,y,0), accent, 2);
+            for (int x=-5; x<=5; x++) {
+                world.setBlockState(p.add(x,8,0), accent, 2);
+                world.setBlockState(p.add(x,9,0), roof, 2);
+                world.setBlockState(p.add(x,10,0), roof, 2);
             }
-            for (int x=-9; x<=9; x++) {
-                world.setBlockState(p.add(x,6,0), roof, 2);
-                world.setBlockState(p.add(x,7,0), roof, 2);
+            for (int y=0; y<=7; y++) {
+                world.setBlockToAir(p.add(-5,y,0));
+                world.setBlockToAir(p.add(5,y,0));
+                world.setBlockToAir(p.add(0,y,0));
             }
             for (int x=-4; x<=4; x++) {
-                world.setBlockState(p.add(x,5,0), accent, 2);
-                world.setBlockState(p.add(x,4,0), Blocks.AIR.getDefaultState(), 2);
+                world.setBlockState(p.add(x,-1,0), Blocks.STONEBRICK.getDefaultState(), 2);
+                world.setBlockState(p.add(x,0,0), Blocks.STONEBRICK.getDefaultState(), 2);
             }
-            world.setBlockState(p.add(-5,4,-1), Blocks.GLOWSTONE.getDefaultState(), 2);
-            world.setBlockState(p.add(5,4,-1), Blocks.GLOWSTONE.getDefaultState(), 2);
+            // Continue both sides of the circular wall to the gate at z=-67.
+            for (int z=-67; z<=-47; z++) for (int y=0; y<=5; y++) {
+                world.setBlockState(p.add(-7,y,z+67), y==5 ? accent : accent, 2);
+                world.setBlockState(p.add(7,y,z+67), y==5 ? accent : accent, 2);
+            }
+            for (int z=-66; z<=-49; z++) for (int x=-7; x<=7; x++)
+                world.setBlockState(p.add(x,-1,z+67), Blocks.STONEBRICK.getDefaultState(), 2);
         }
 
         private void buildVillageGarden(World world, BlockPos p, Random random) {
