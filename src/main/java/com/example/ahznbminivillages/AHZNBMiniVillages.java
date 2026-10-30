@@ -203,7 +203,7 @@ public class AHZNBMiniVillages {
         }
 
         private void buildNinjaHouse(World world, BlockPos p, IBlockState wall, IBlockState roof,
-                                     IBlockState accent, Random random) {
+                                     IBlockState accent, Random random, int style) {
             // Large two-storey player-style home with a broad tiered roof.
             IBlockState glass = Blocks.GLASS_PANE.getDefaultState();
             IBlockState fence = Blocks.OAK_FENCE.getDefaultState();
@@ -227,11 +227,17 @@ public class AHZNBMiniVillages {
                 world.setBlockToAir(p.add(-1,y,-5));
                 world.setBlockToAir(p.add(0,y,-5));
             }
-            // Real double-width oak front door, with upper and lower halves.
-            world.setBlockState(p.add(-1,1,-5), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
-            world.setBlockState(p.add(-1,2,-5), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
-            world.setBlockState(p.add(0,1,-5), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
-            world.setBlockState(p.add(0,2,-5), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
+            // Two double-width entrances on opposite facades, facing each other.
+            for (int zFace : new int[]{-5,5}) {
+                for (int y=1; y<=2; y++) {
+                    world.setBlockToAir(p.add(-1,y,zFace));
+                    world.setBlockToAir(p.add(0,y,zFace));
+                }
+                world.setBlockState(p.add(-1,1,zFace), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
+                world.setBlockState(p.add(-1,2,zFace), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
+                world.setBlockState(p.add(0,1,zFace), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
+                world.setBlockState(p.add(0,2,zFace), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
+            }
             // Entrance canopy and decorative side pillars.
             for (int dx=-2; dx<=1; dx++) {
                 world.setBlockState(p.add(dx,0,-6), accent, 2);
@@ -307,14 +313,16 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(0,11,0), accent, 2);
             world.setBlockState(p.add(0,12,0), Blocks.GLOWSTONE.getDefaultState(), 2);
 
-            // Clear, flat entrance: no stairs or slabs in front of the house.
+            // Clear, flat approach outside both opposing entrances.
             for (int z=-9; z<=-6; z++) for (int dx=-2; dx<=2; dx++)
+                world.setBlockToAir(p.add(dx,1,z));
+            for (int z=6; z<=9; z++) for (int dx=-2; dx<=2; dx++)
                 world.setBlockToAir(p.add(dx,1,z));
             world.setBlockState(p.add(-3,3,-5), Blocks.TORCH.getDefaultState(), 2);
             world.setBlockState(p.add(3,3,-5), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(3,1,3), Blocks.CHEST.getDefaultState(), 2);
-            if (world.getTileEntity(p.add(3,1,3)) instanceof TileEntityChest)
-                fillChest((TileEntityChest)world.getTileEntity(p.add(3,1,3)), random);
+            // Two loot chests placed on opposite sides of the ground floor.
+            placeLootChest(world, p.add(-3,1,3), random);
+            placeLootChest(world, p.add(3,1,3), random);
             world.setBlockState(p.add(0,3,0), Blocks.GLOWSTONE.getDefaultState(), 2);\n            world.setBlockState(p.add(-4,3,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(4,3,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(0,6,0), Blocks.GLOWSTONE.getDefaultState(), 2);\n            world.setBlockState(p.add(-3,6,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(3,6,0), Blocks.TORCH.getDefaultState(), 2);
 
             // Two separate beds, plus work area, shelves and carpet.
@@ -355,8 +363,11 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(-4,6,4), Blocks.BED.getStateFromMeta(8), 2);
             world.setBlockState(p.add(-4,1,-3), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
             world.setBlockState(p.add(-3,1,-3), Blocks.FURNACE.getDefaultState(), 2);
-            world.setBlockState(p.add(0,1,5), Blocks.CHEST.getDefaultState(), 2);
-            if (world.getTileEntity(p.add(0,1,5)) instanceof TileEntityChest) fillChest((TileEntityChest)world.getTileEntity(p.add(0,1,5)), random);
+            // Four separate loot chests in the central residence.
+            placeLootChest(world, p.add(-5,1,-5), random);
+            placeLootChest(world, p.add(5,1,-5), random);
+            placeLootChest(world, p.add(-5,1,5), random);
+            placeLootChest(world, p.add(5,1,5), random);
         }
 
         private void buildVillageWalls(World world, BlockPos p, IBlockState wall, IBlockState accent) {
@@ -481,6 +492,12 @@ public class AHZNBMiniVillages {
             }
             world.setBlockState(p.add(1,0,1), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
             world.setBlockState(p.add(-1,0,-1), Blocks.RED_FLOWER.getDefaultState(), 2);
+        }
+
+        private void placeLootChest(World world, BlockPos pos, Random random) {
+            world.setBlockState(pos, Blocks.CHEST.getDefaultState(), 2);
+            if (world.getTileEntity(pos) instanceof TileEntityChest)
+                fillChest((TileEntityChest)world.getTileEntity(pos), random);
         }
 
         private void fillChest(TileEntityChest chest, Random random) {
