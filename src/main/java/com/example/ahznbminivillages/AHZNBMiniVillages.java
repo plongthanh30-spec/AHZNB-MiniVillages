@@ -470,7 +470,7 @@ public class AHZNBMiniVillages {
         private void fillChest(TileEntityChest chest, Random random) {
             // Each chest gets 10-15 stacks of useful supplies.
             Item[] commonLoot = { Items.BREAD, Items.COOKED_BEEF, Items.COOKED_CHICKEN,
-                Items.CARROT, Items.POTATO, Items.APPLE, Items.ARROW, Items.TORCH,
+                Items.CARROT, Items.POTATO, Items.APPLE, Items.ARROW, Items.STICK,
                 Items.STRING, Items.LEATHER, Items.COAL, Items.IRON_INGOT,
                 Items.GOLD_INGOT, Items.EXPERIENCE_BOTTLE, Items.PAPER, Items.BOOK,
                 Items.STICK, Items.BONE };
