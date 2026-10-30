@@ -93,7 +93,7 @@ public class AHZNBMiniVillages {
         Configuration cfg = new Configuration(new File(event.getModConfigurationDirectory(), MODID + ".cfg"));
         try {
             cfg.load();
-            spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 300, 200, 500,
+            spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 180, 100, 500,
                     "Approximate target spacing in blocks. Set between 200 and 500.");
             ahznbLoot = cfg.getStringList("ahznbLoot", "loot", ahznbLoot,
                     "Exact AHZNB item registry IDs. Remove entries here to disable them from village chest loot.");
@@ -110,7 +110,7 @@ public class AHZNBMiniVillages {
             if (world.isRemote || world.provider.getDimension() != 0) return;
 
             // 2.5x the previous attempt rate (256 -> 640).
-            double chancePerChunk = Math.min(1.0, 640.0 / (spacingBlocks * (double) spacingBlocks));
+            double chancePerChunk = Math.min(1.0, 1800.0 / (spacingBlocks * (double) spacingBlocks));
             if (random.nextDouble() >= chancePerChunk) return;
 
             int x = chunkX * 16 + 3 + random.nextInt(10);
@@ -127,8 +127,8 @@ public class AHZNBMiniVillages {
 
         private boolean isMostlyClear(World world, BlockPos p) {
             // Sample the area instead of checking every block to keep world generation light.
-            for (int dx = -40; dx <= 40; dx += 8) {
-                for (int dz = -40; dz <= 40; dz += 8) {
+            for (int dx = -32; dx <= 32; dx += 16) {
+                for (int dz = -32; dz <= 32; dz += 16) {
                     Block b = world.getBlockState(p.add(dx, -1, dz)).getBlock();
                     if (b != Blocks.GRASS && b != Blocks.DIRT && b != Blocks.SAND &&
                         b != Blocks.STONE && b != Blocks.GRAVEL) return false;
@@ -177,7 +177,7 @@ public class AHZNBMiniVillages {
             };
             for (int i=0; i<homes.length; i++) {
                 BlockPos house = p.add(homes[i][0], 0, homes[i][1]);
-                buildNinjaHouse(world, house, wall, roof, accent, random);
+                buildNinjaHouse(world, house, wall, roof, accent, random, type);
                 // Small style variations: porch pillars, flower beds and side lamps.
                 if (i%3==0) world.setBlockState(house.add(0,3,-6), accent, 2);
                 if (i%3==1) world.setBlockState(house.add(0,3,6), Blocks.GLOWSTONE.getDefaultState(), 2);
@@ -290,7 +290,7 @@ public class AHZNBMiniVillages {
 
             // Multi-level Japanese-inspired roof with wide eaves.
             for (int layer=0; layer<3; layer++) {
-                int radius=7-layer*2;
+                int radius=(style==1 ? 6-layer : (style==2 ? 6-layer*2 : (style==3 ? 8-layer*2 : 7-layer*2)));
                 int y=7+layer;
                 for (int dx=-radius; dx<=radius; dx++) for (int dz=-radius; dz<=radius; dz++) {
                     // Filled roof tiers look like a real Japanese tiled roof, not a hollow outline.
@@ -315,7 +315,7 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(3,1,3), Blocks.CHEST.getDefaultState(), 2);
             if (world.getTileEntity(p.add(3,1,3)) instanceof TileEntityChest)
                 fillChest((TileEntityChest)world.getTileEntity(p.add(3,1,3)), random);
-            world.setBlockState(p.add(0,2,0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(0,3,0), Blocks.GLOWSTONE.getDefaultState(), 2);\n            world.setBlockState(p.add(-4,3,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(4,3,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(0,6,0), Blocks.GLOWSTONE.getDefaultState(), 2);\n            world.setBlockState(p.add(-3,6,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(3,6,0), Blocks.TORCH.getDefaultState(), 2);
 
             // Two separate beds, plus work area, shelves and carpet.
             world.setBlockState(p.add(-3,1,2), Blocks.BED.getStateFromMeta(0), 2);
@@ -330,84 +330,49 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(1,1,2), Blocks.FLOWER_POT.getDefaultState(), 2);
         }
 
-        private void buildCentralResidence(World world, BlockPos p, IBlockState wall,
-                                            IBlockState roof, IBlockState accent, Random random) {
-            // Oversized 17x17 landmark home at the exact center of each village.
+        private void buildCentralResidence(World world, BlockPos p, IBlockState wall, IBlockState roof, IBlockState accent, Random random) {
             for (int dx=-8; dx<=8; dx++) for (int dz=-8; dz<=8; dz++) {
                 world.setBlockState(p.add(dx,-1,dz), accent, 2);
+                world.setBlockState(p.add(dx,0,dz), Blocks.PLANKS.getDefaultState(), 2);
                 if (Math.abs(dx)==8 || Math.abs(dz)==8) {
-                    for (int y=1; y<=5; y++) world.setBlockState(p.add(dx,y,dz), wall, 2);
-                } else {
-                    world.setBlockState(p.add(dx,0,dz), Blocks.PLANKS.getDefaultState(), 2);
+                    for (int y=1; y<=4; y++) world.setBlockState(p.add(dx,y,dz), wall, 2);
+                    for (int y=6; y<=9; y++) world.setBlockState(p.add(dx,y,dz), wall, 2);
                 }
             }
-            // Large front doors and tall windows.
-            for (int y=1; y<=3; y++) for (int dx=-1; dx<=1; dx++)
-                world.setBlockToAir(p.add(dx,y,-8));
-            for (int y=2; y<=4; y++) for (int dx : new int[]{-6,-5,5,6}) {
-                world.setBlockState(p.add(dx,y,-8), Blocks.GLASS_PANE.getDefaultState(), 2);
-                world.setBlockState(p.add(dx,y,8), Blocks.GLASS_PANE.getDefaultState(), 2);
-            }
-            for (int y=1; y<=5; y++) {
-                world.setBlockState(p.add(-8,y,-8), accent, 2);
-                world.setBlockState(p.add(8,y,-8), accent, 2);
-                world.setBlockState(p.add(-8,y,8), accent, 2);
-                world.setBlockState(p.add(8,y,8), accent, 2);
-            }
-            // Wide layered roof with a raised ridge and decorative finial.
-            for (int layer=0; layer<4; layer++) {
-                int r=10-layer*2;
-                for (int dx=-r; dx<=r; dx++) for (int dz=-r; dz<=r; dz++)
-                    world.setBlockState(p.add(dx,6+layer,dz), roof, 2);
-            }
-            for (int dx=-3; dx<=3; dx++) for (int dz=-3; dz<=3; dz++)
-                world.setBlockState(p.add(dx,10,dz), accent, 2);
-            world.setBlockState(p.add(0,11,0), Blocks.GLOWSTONE.getDefaultState(), 2);
-            // Furnish the central hall and place two pairs of beds.
+            for (int dx=-8; dx<=8; dx++) for (int dz=-8; dz<=8; dz++) world.setBlockState(p.add(dx,5,dz), Blocks.PLANKS.getDefaultState(), 2);
+            for (int y=1; y<=3; y++) for (int dx=-1; dx<=1; dx++) world.setBlockToAir(p.add(dx,y,-8));
+            for (int y=6; y<=8; y++) for (int dx=-1; dx<=1; dx++) world.setBlockToAir(p.add(dx,y,-8));
+            for (int layer=0; layer<4; layer++) { int r=10-layer*2; for (int dx=-r; dx<=r; dx++) for (int dz=-r; dz<=r; dz++) world.setBlockState(p.add(dx,10+layer,dz), roof, 2); }
+            world.setBlockState(p.add(0,3,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            world.setBlockState(p.add(0,8,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            world.setBlockState(p.add(-7,3,0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(7,3,0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(-7,8,0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(7,8,0), Blocks.TORCH.getDefaultState(), 2);
             world.setBlockState(p.add(-5,1,3), Blocks.BED.getStateFromMeta(0), 2);
             world.setBlockState(p.add(-5,1,4), Blocks.BED.getStateFromMeta(8), 2);
-            world.setBlockState(p.add(5,1,3), Blocks.BED.getStateFromMeta(0), 2);
-            world.setBlockState(p.add(5,1,4), Blocks.BED.getStateFromMeta(8), 2);
+            world.setBlockState(p.add(-4,6,3), Blocks.BED.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(-4,6,4), Blocks.BED.getStateFromMeta(8), 2);
             world.setBlockState(p.add(-4,1,-3), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
             world.setBlockState(p.add(-3,1,-3), Blocks.FURNACE.getDefaultState(), 2);
-            world.setBlockState(p.add(4,1,-3), Blocks.BOOKSHELF.getDefaultState(), 2);
-            world.setBlockState(p.add(5,1,-3), Blocks.BOOKSHELF.getDefaultState(), 2);
-            world.setBlockState(p.add(0,1,0), Blocks.CARPET.getDefaultState(), 2);
-            world.setBlockState(p.add(-2,2,-7), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(2,2,-7), Blocks.TORCH.getDefaultState(), 2);
             world.setBlockState(p.add(0,1,5), Blocks.CHEST.getDefaultState(), 2);
-            if (world.getTileEntity(p.add(0,1,5)) instanceof TileEntityChest)
-                fillChest((TileEntityChest)world.getTileEntity(p.add(0,1,5)), random);
+            if (world.getTileEntity(p.add(0,1,5)) instanceof TileEntityChest) fillChest((TileEntityChest)world.getTileEntity(p.add(0,1,5)), random);
         }
 
         private void buildVillageWalls(World world, BlockPos p, IBlockState wall, IBlockState accent) {
-            // Continuous defensive perimeter around the settlement, with a clear north gate opening.
-            int radius = 48;
-            for (int x=-radius; x<=radius; x++) {
-                for (int y=0; y<=5; y++) {
-                    if (Math.abs(x) <= 6) continue; // leave room for the main entrance gate
-                    world.setBlockState(p.add(x,y,-radius), y==5 ? accent : wall, 2);
-                    world.setBlockState(p.add(x,y,radius), y==5 ? accent : wall, 2);
-                }
-            }
-            for (int z=-radius; z<=radius; z++) {
-                for (int y=0; y<=5; y++) {
-                    world.setBlockState(p.add(-radius,y,z), y==5 ? accent : wall, 2);
-                    world.setBlockState(p.add(radius,y,z), y==5 ? accent : wall, 2);
-                }
-            }
-            // Regular crenellations make the wall read as a fortified ninja village.
-            for (int v=-radius; v<=radius; v+=4) {
-                world.setBlockState(p.add(v,6,-radius), accent, 2);
-                world.setBlockState(p.add(v,6,radius), accent, 2);
-                world.setBlockState(p.add(-radius,6,v), accent, 2);
-                world.setBlockState(p.add(radius,6,v), accent, 2);
+            int radius=48;
+            for (int angle=0; angle<360; angle++) {
+                double rad=Math.toRadians(angle);
+                int x=(int)Math.round(Math.cos(rad)*radius), z=(int)Math.round(Math.sin(rad)*radius);
+                if (z<0 && Math.abs(x)<=6) continue;
+                for (int y=0; y<=5; y++) world.setBlockState(p.add(x,y,z), y==5 ? accent : wall, 2);
+                if (angle%8==0) world.setBlockState(p.add(x,6,z), accent, 2);
             }
         }
 
         private void spawnBijuu(World world, BlockPos center, Random random) {
             // 1% chance per generated village. Spawn 10 blocks outside the perimeter wall; never spawn the Ten Tails.
-            if (random.nextInt(100) != 0) return;
+            if (random.nextInt(100) >= 20) return;
             java.util.List<EntityEntry> bijuuTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
