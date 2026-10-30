@@ -26,7 +26,63 @@ import java.util.Random;
 public class AHZNBMiniVillages {
     public static final String MODID = "ahznbminivillages";
     static int spacingBlocks = 300;
-    static String[] ahznbLoot = new String[0];
+    static String[] ahznbLoot = new String[] {
+        "narutomod:anbu_sword",
+        "narutomod:chakra_blades",
+        "narutomod:chokuto",
+        "narutomod:claw",
+        "narutomod:cleaver",
+        "narutomod:explosive_tag",
+        "narutomod:folding_fan",
+        "narutomod:team_scroll",
+        "narutomod:steam_armorlegs",
+        "narutomod:steam_armorhelmet",
+        "narutomod:steam_armorbody",
+        "narutomod:spear_retractable",
+        "narutomod:sound_gaunlet",
+        "narutomod:smoke_bomb",
+        "narutomod:senbon",
+        "narutomod:gaunlet",
+        "narutomod:ichiraku_ramen",
+        "narutomod:kunai_3prong",
+        "narutomod:kunai_blade",
+        "narutomod:kunai_explosive",
+        "narutomod:military_rations_pill",
+        "narutomod:military_rations_pill_gold",
+        "narutomod:uchihaboots",
+        "narutomod:ninja_armor_fishnetslegs",
+        "narutomod:ninja_armor_amehelmet",
+        "narutomod:ninja_armor_iwahelmet",
+        "narutomod:ninja_armor_kirihelmet",
+        "narutomod:ninja_armor_konohahelmet",
+        "narutomod:ninja_armor_war_1helmet",
+        "narutomod:ninja_armor_kumohelmet",
+        "narutomod:ninja_armor_sunahelmet",
+        "narutomod:ninja_armor_jumpsuitlegs",
+        "narutomod:ninja_armor_anbulegs",
+        "narutomod:ninja_armor_iwalegs",
+        "narutomod:ninja_armor_kirilegs",
+        "narutomod:ninja_armor_konohalegs",
+        "narutomod:ninja_armor_kumolegs",
+        "narutomod:ninja_armor_sunalegs",
+        "narutomod:ninja_armor_anbubody",
+        "narutomod:ninja_armor_iwabody",
+        "narutomod:ninja_armor_kiribody",
+        "narutomod:ninja_armor_konohabody",
+        "narutomod:ninja_armor_kumobody",
+        "narutomod:ninja_armor_sunabody",
+        "narutomod:poisonbomb",
+        "narutomod:poison_senbon",
+        "narutomod:kunai",
+        "narutomod:medical_scroll",
+        "narutomod:shuriken",
+        "narutomod:uchihalegs",
+        "narutomod:uchihabody",
+        "narutomod:samurai_armorbody",
+        "narutomod:samurai_armorhelmet",
+        "narutomod:samurai_armorlegs",
+        "narutomod:senbon_arm"
+    };
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -35,8 +91,8 @@ public class AHZNBMiniVillages {
             cfg.load();
             spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 300, 200, 500,
                     "Approximate target spacing in blocks. Set between 200 and 500.");
-            ahznbLoot = cfg.getStringList("ahznbLoot", "loot", new String[0],
-                    "Exact item registry IDs, e.g. modid:item_name or modid:item_name@metadata. Empty by default; fill after verifying AHZNB IDs.");
+            ahznbLoot = cfg.getStringList("ahznbLoot", "loot", ahznbLoot,
+                    "Exact AHZNB item registry IDs. Remove entries here to disable them from village chest loot.");
         } finally {
             if (cfg.hasChanged()) cfg.save();
         }
