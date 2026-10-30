@@ -223,7 +223,22 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(5,y,i), wall, 2);
             }
             for (int y=1; y<=2; y++) {
-                for (int dx=-1; dx<=1; dx++) world.setBlockToAir(p.add(dx,y,-5));
+                world.setBlockToAir(p.add(-1,y,-5));
+                world.setBlockToAir(p.add(0,y,-5));
+            }
+            // Real double-width oak front door, with upper and lower halves.
+            world.setBlockState(p.add(-1,1,-5), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(-1,2,-5), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
+            world.setBlockState(p.add(0,1,-5), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(0,2,-5), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
+            // Entrance canopy and decorative side pillars.
+            for (int dx=-2; dx<=1; dx++) {
+                world.setBlockState(p.add(dx,0,-6), accent, 2);
+                world.setBlockState(p.add(dx,3,-6), roof, 2);
+            }
+            for (int y=1; y<=3; y++) {
+                world.setBlockState(p.add(-2,y,-5), accent, 2);
+                world.setBlockState(p.add(1,y,-5), accent, 2);
             }
             // Large windows on each facade.
             for (int y=2; y<=3; y++) for (int dx : new int[]{-3,-2,2,3}) {
@@ -453,29 +468,32 @@ public class AHZNBMiniVillages {
         }
 
         private void fillChest(TileEntityChest chest, Random random) {
-            // Keep loot modest: only two vanilla rewards and up to three Naruto items.
-            put(chest, new ItemStack(Items.IRON_INGOT, 1 + random.nextInt(3)), random);
-            put(chest, new ItemStack(Items.EXPERIENCE_BOTTLE, 1 + random.nextInt(2)), random);
-
+            // Each chest gets 10-15 stacks of useful supplies.
+            Item[] commonLoot = { Items.BREAD, Items.COOKED_BEEF, Items.COOKED_CHICKEN,
+                Items.CARROT, Items.POTATO, Items.APPLE, Items.ARROW, Items.TORCH,
+                Items.STRING, Items.LEATHER, Items.COAL, Items.IRON_INGOT,
+                Items.GOLD_INGOT, Items.EXPERIENCE_BOTTLE, Items.PAPER, Items.BOOK,
+                Items.STICK, Items.BONE };
+            int stackCount = 10 + random.nextInt(6);
+            for (int i=0; i<stackCount; i++) {
+                Item item = commonLoot[random.nextInt(commonLoot.length)];
+                int amount = 1 + random.nextInt(Math.max(1, Math.min(4, item.getItemStackLimit())));
+                put(chest, new ItemStack(item, amount), random);
+            }
+            // Up to three bonus Naruto items, when valid AHZNB items are configured.
             int added = 0;
             for (String raw : ahznbLoot) {
-                if (added >= 3) break;
-                if (random.nextInt(100) < 10) {
-                    String[] parts = raw.trim().split("@");
-                    ResourceLocation id = new ResourceLocation(parts[0]);
-                    Item item = Item.REGISTRY.getObject(id);
-                    if (item != null && item != Items.AIR) {
-                        int meta = 0;
-                        if (parts.length > 1) {
-                            try { meta = Integer.parseInt(parts[1]); } catch (NumberFormatException ignored) {}
-                        }
-                        put(chest, new ItemStack(item, 1, meta), random);
-                        added++;
-                    }
+                if (added >= 3 || random.nextInt(100) >= 10) continue;
+                String[] parts = raw.trim().split("@");
+                Item item = Item.REGISTRY.getObject(new ResourceLocation(parts[0]));
+                if (item != null && item != Items.AIR) {
+                    int meta = 0;
+                    if (parts.length > 1) { try { meta = Integer.parseInt(parts[1]); } catch (NumberFormatException ignored) {} }
+                    put(chest, new ItemStack(item, 1, meta), random);
+                    added++;
                 }
             }
         }
-
         private void put(TileEntityChest chest, ItemStack stack, Random random) {
             for (int i = 0; i < 20; i++) {
                 int slot = random.nextInt(chest.getSizeInventory());
