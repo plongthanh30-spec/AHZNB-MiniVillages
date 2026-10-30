@@ -422,6 +422,54 @@ public class AHZNBMiniVillages {
             world.spawnEntity(bijuu);
         }
 
+        private void buildDistinctVillageArchitecture(World world, BlockPos p, IBlockState wall, IBlockState roof, IBlockState accent, int type, Random random) {
+            // Distinct facade details by hidden village type. The base house remains shared;
+            // these additions give each settlement a recognizable silhouette.
+            if (type == 0) { // Konoha: Japanese layered eaves and timber facade
+                for (int z=-6; z<=6; z+=12) {
+                    for (int x=-6; x<=6; x++) {
+                        world.setBlockState(p.add(x,6,z), roof, 2);
+                        world.setBlockState(p.add(x,7,z), wall, 2);
+                    }
+                }
+                for (int x : new int[]{-5,5}) {
+                    world.setBlockState(p.add(x,1,-6), Blocks.LANTERN.getDefaultState(), 2);
+                    world.setBlockState(p.add(x,5,-6), accent, 2);
+                }
+            } else if (type == 1) { // Suna: sandstone fortress parapets
+                for (int x=-6; x<=6; x++) {
+                    if (x%2==0) {
+                        world.setBlockState(p.add(x,7,-6), accent, 2);
+                        world.setBlockState(p.add(x,7,6), accent, 2);
+                    }
+                }
+                for (int z=-5; z<=5; z+=5) for (int y=2; y<=6; y++)
+                    world.setBlockState(p.add(-6,y,z), wall, 2);
+            } else if (type == 2) { // Iwa: heavy stone buttresses
+                for (int x : new int[]{-6,6}) for (int z : new int[]{-5,5})
+                    for (int y=0; y<=7; y++)
+                        world.setBlockState(p.add(x,y,z), y%2==0 ? accent : wall, 2);
+                for (int x=-5; x<=5; x+=2)
+                    world.setBlockState(p.add(x,7,-6), roof, 2);
+            } else if (type == 3) { // Kumo: timber galleries and raised eaves
+                for (int x=-6; x<=6; x++) {
+                    world.setBlockState(p.add(x,4,-7), accent, 2);
+                    world.setBlockState(p.add(x,4,7), accent, 2);
+                }
+                for (int x : new int[]{-6,6}) for (int z : new int[]{-6,6})
+                    for (int y=1; y<=7; y++)
+                        world.setBlockState(p.add(x,y,z), wall, 2);
+            } else { // Kiri: steep roof gables and dark corner columns
+                for (int x : new int[]{-6,6}) for (int z=-6; z<=6; z++)
+                    for (int y=1; y<=7; y++)
+                        if (z%3==0) world.setBlockState(p.add(x,y,z), accent, 2);
+                for (int x=-5; x<=5; x++) {
+                    world.setBlockState(p.add(x,7,-6), roof, 2);
+                    world.setBlockState(p.add(x,7,6), roof, 2);
+                }
+            }
+        }
+
         private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
             // Monumental gate: twin towers, layered roof, lit arch and connected defensive walls.
             for (int side : new int[]{-1,1}) {
