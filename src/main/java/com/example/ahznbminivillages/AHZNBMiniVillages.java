@@ -172,8 +172,12 @@ public class AHZNBMiniVillages {
 
             // Eleven varied homes around a larger central residence.
             int[][] homes = {
+                // Original eleven homes
                 {-29,-27}, {-9,-34}, {14,-34}, {34,-22}, {37,2},
-                {29,29}, {6,37}, {-19,32}, {-37,12}, {-35,-13}, {0,42}
+                {29,29}, {6,37}, {-19,32}, {-37,12}, {-35,-13}, {0,42},
+                // Ten additional homes around the outer residential ring
+                {-65,-45}, {-42,-68}, {-5,-72}, {38,-66}, {68,-42},
+                {72,8}, {55,58}, {12,73}, {-38,66}, {-72,28}
             };
             for (int i=0; i<homes.length; i++) {
                 BlockPos house = p.add(homes[i][0], 0, homes[i][1]);
@@ -394,8 +398,8 @@ public class AHZNBMiniVillages {
         }
 
         private void spawnBijuu(World world, BlockPos center, Random random) {
-            // 1% chance per generated village. Spawn 10 blocks outside the perimeter wall; never spawn the Ten Tails.
-            if (random.nextInt(100) >= 20) return;
+            // 30% chance per generated village (50% higher than the previous 20%). Spawn outside the wall; never spawn the Ten Tails.
+            if (random.nextInt(100) >= 30) return;
             java.util.List<EntityEntry> bijuuTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
