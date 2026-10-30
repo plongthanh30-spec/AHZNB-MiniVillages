@@ -1,10 +1,8 @@
 package com.example.ahznbminivillages;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockBed;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -304,12 +302,8 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(0,2,0), Blocks.TORCH.getDefaultState(), 2);
 
             // Furnished living space: bed, work area, shelves, fireplace and carpet.
-            world.setBlockState(p.add(-3,1,2), Blocks.BED.getDefaultState()
-                    .withProperty(BlockBed.PART, BlockBed.EnumPart.FOOT)
-                    .withProperty(BlockBed.FACING, EnumFacing.SOUTH), 2);
-            world.setBlockState(p.add(-3,1,3), Blocks.BED.getDefaultState()
-                    .withProperty(BlockBed.PART, BlockBed.EnumPart.HEAD)
-                    .withProperty(BlockBed.FACING, EnumFacing.SOUTH), 2);
+            world.setBlockState(p.add(-3,1,2), Blocks.BED.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(-3,1,3), Blocks.BED.getStateFromMeta(8), 2);
             world.setBlockState(p.add(-3,1,-2), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
             world.setBlockState(p.add(-2,1,-2), Blocks.FURNACE.getDefaultState(), 2);
             world.setBlockState(p.add(2,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
@@ -350,7 +344,7 @@ public class AHZNBMiniVillages {
             }
             for (int x : new int[]{-8,8}) for (int z : new int[]{-8,8}) {
                 for (int y=0; y<=3; y++)
-                    world.setBlockState(p.add(x,y,z), Blocks.FENCE.getDefaultState(), 2);
+                    world.setBlockState(p.add(x,y,z), Blocks.OAK_FENCE.getDefaultState(), 2);
                 world.setBlockState(p.add(x,4,z), Blocks.GLOWSTONE.getDefaultState(), 2);
                 world.setBlockState(p.add(x+1,0,z), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
                 world.setBlockState(p.add(x-1,0,z), Blocks.RED_FLOWER.getDefaultState(), 2);
