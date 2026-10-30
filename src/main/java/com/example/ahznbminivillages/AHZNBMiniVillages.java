@@ -186,30 +186,67 @@ public class AHZNBMiniVillages {
 
         private void buildNinjaHouse(World world, BlockPos p, IBlockState wall, IBlockState roof,
                                      IBlockState accent, Random random) {
-            // Compact 5x5 house with a simple roof and one chest inside.
+            // Detailed 5x5 ninja house: raised foundation, framed walls, windows and a layered roof.
+            IBlockState glass = Blocks.GLASS_PANE.getDefaultState();
+            IBlockState fence = Blocks.OAK_FENCE.getDefaultState();
+            IBlockState slab = Blocks.WOODEN_SLAB.getDefaultState();
+            IBlockState stair = Blocks.OAK_STAIRS.getDefaultState();
+
+            // Foundation and floor.
             for (int dx = -2; dx <= 2; dx++) {
                 for (int dz = -2; dz <= 2; dz++) {
-                    world.setBlockState(p.add(dx, -1, dz), wall, 2);
-                    boolean edge = Math.abs(dx) == 2 || Math.abs(dz) == 2;
-                    for (int dy = 0; dy <= 2; dy++) {
-                        if (edge && !(dy < 2 && dx == 0 && dz == -2)) {
-                            world.setBlockState(p.add(dx, dy, dz), wall, 2);
-                        } else {
-                            world.setBlockToAir(p.add(dx, dy, dz));
-                        }
-                    }
-                    if (edge) world.setBlockState(p.add(dx, 3, dz), roof, 2);
+                    world.setBlockState(p.add(dx, -1, dz), accent, 2);
+                    world.setBlockState(p.add(dx, 0, dz), wall, 2);
                 }
             }
+
+            // Three-block-high walls with a centered front entrance.
+            for (int dy = 1; dy <= 3; dy++) {
+                for (int i = -2; i <= 2; i++) {
+                    world.setBlockState(p.add(i, dy, -2), wall, 2);
+                    world.setBlockState(p.add(i, dy, 2), wall, 2);
+                    world.setBlockState(p.add(-2, dy, i), wall, 2);
+                    world.setBlockState(p.add(2, dy, i), wall, 2);
+                }
+            }
+            // Open doorway and glass windows on all sides.
+            for (int dy = 1; dy <= 2; dy++) world.setBlockToAir(p.add(0, dy, -2));
+            world.setBlockState(p.add(-1, 2, -2), glass, 2);
+            world.setBlockState(p.add(1, 2, -2), glass, 2);
+            world.setBlockState(p.add(-2, 2, 0), glass, 2);
+            world.setBlockState(p.add(2, 2, 0), glass, 2);
+            world.setBlockState(p.add(0, 2, 2), glass, 2);
+
+            // Corner pillars and decorative trim.
+            for (int dx : new int[]{-2, 2}) for (int dz : new int[]{-2, 2}) {
+                for (int dy = 1; dy <= 3; dy++) world.setBlockState(p.add(dx, dy, dz), accent, 2);
+            }
             for (int dx = -2; dx <= 2; dx++) {
-                world.setBlockState(p.add(dx, 4, 0), roof, 2);
+                world.setBlockState(p.add(dx, 3, -2), accent, 2);
+                world.setBlockState(p.add(dx, 3, 2), accent, 2);
             }
-            world.setBlockState(p.add(0, 1, 1), Blocks.CHEST.getDefaultState(), 2);
-            if (world.getTileEntity(p.add(0, 1, 1)) instanceof TileEntityChest) {
-                fillChest((TileEntityChest) world.getTileEntity(p.add(0, 1, 1)), random);
+
+            // Layered, overhanging roof silhouette.
+            for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
+                if (Math.abs(dx) == 2 || Math.abs(dz) == 2)
+                    world.setBlockState(p.add(dx, 4, dz), roof, 2);
             }
-            world.setBlockState(p.add(0, 1, -1), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(0, 2, 0), accent, 2);
+            for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
+                world.setBlockState(p.add(dx, 5, dz), roof, 2);
+            world.setBlockState(p.add(0, 6, 0), accent, 2);
+
+            // Interior lighting, chest and simple entry porch.
+            world.setBlockState(p.add(0, 2, 0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(1, 1, 1), Blocks.CHEST.getDefaultState(), 2);
+            if (world.getTileEntity(p.add(1, 1, 1)) instanceof TileEntityChest) {
+                fillChest((TileEntityChest) world.getTileEntity(p.add(1, 1, 1)), random);
+            }
+            for (int dx = -1; dx <= 1; dx++) {
+                world.setBlockState(p.add(dx, 0, -3), slab, 2);
+            }
+            world.setBlockState(p.add(-2, 1, -3), fence, 2);
+            world.setBlockState(p.add(2, 1, -3), fence, 2);
+            world.setBlockState(p.add(0, 1, -3), stair, 2);
         }
 
         private void fillChest(TileEntityChest chest, Random random) {
