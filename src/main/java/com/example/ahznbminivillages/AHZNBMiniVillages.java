@@ -195,8 +195,10 @@ public class AHZNBMiniVillages {
                 boolean edge=Math.abs(dx)==7 || Math.abs(dz)==7;
                 world.setBlockState(p.add(dx,-1,dz), (edge ? Blocks.STONEBRICK.getDefaultState() : Blocks.STONE.getDefaultState()), 2);
             }
-            buildVillageGate(world, p.add(0,0,-40), accent, roof);
+            buildVillageWalls(world, p, wall, accent);
+            buildVillageGate(world, p.add(0,0,-48), accent, roof);
             buildVillageGarden(world, p, random);
+            spawnBijuu(world, p, random);
             spawnVillageResidents(world, p, random);
         }
 
@@ -207,7 +209,6 @@ public class AHZNBMiniVillages {
             IBlockState fence = Blocks.OAK_FENCE.getDefaultState();
             IBlockState plank = Blocks.PLANKS.getStateFromMeta(0);
             IBlockState slab = Blocks.WOODEN_SLAB.getDefaultState();
-            IBlockState stair = Blocks.OAK_STAIRS.getDefaultState();
 
             // Wide foundation and lower floor (11 x 11).
             for (int dx=-5; dx<=5; dx++) for (int dz=-5; dz<=5; dz++) {
@@ -306,13 +307,9 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(0,11,0), accent, 2);
             world.setBlockState(p.add(0,12,0), Blocks.GLOWSTONE.getDefaultState(), 2);
 
-            // Grand front staircase, porch, lanterns and interior storage.
+            // Clear, flat entrance: no stairs or slabs in front of the house.
             for (int z=-9; z<=-6; z++) for (int dx=-2; dx<=2; dx++)
-                world.setBlockState(p.add(dx,0,z), accent, 2);
-            for (int dx=-2; dx<=2; dx++) {
-                world.setBlockState(p.add(dx,1,-7), stair, 2);
-                world.setBlockState(p.add(dx,1,-6), slab, 2);
-            }
+                world.setBlockToAir(p.add(dx,1,z));
             world.setBlockState(p.add(-3,3,-5), Blocks.TORCH.getDefaultState(), 2);
             world.setBlockState(p.add(3,3,-5), Blocks.TORCH.getDefaultState(), 2);
             world.setBlockState(p.add(3,1,3), Blocks.CHEST.getDefaultState(), 2);
@@ -381,6 +378,56 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(0,1,5), Blocks.CHEST.getDefaultState(), 2);
             if (world.getTileEntity(p.add(0,1,5)) instanceof TileEntityChest)
                 fillChest((TileEntityChest)world.getTileEntity(p.add(0,1,5)), random);
+        }
+
+        private void buildVillageWalls(World world, BlockPos p, IBlockState wall, IBlockState accent) {
+            // Continuous defensive perimeter around the settlement, with a clear north gate opening.
+            int radius = 48;
+            for (int x=-radius; x<=radius; x++) {
+                for (int y=0; y<=5; y++) {
+                    if (Math.abs(x) <= 6) continue; // leave room for the main entrance gate
+                    world.setBlockState(p.add(x,y,-radius), y==5 ? accent : wall, 2);
+                    world.setBlockState(p.add(x,y,radius), y==5 ? accent : wall, 2);
+                }
+            }
+            for (int z=-radius; z<=radius; z++) {
+                for (int y=0; y<=5; y++) {
+                    world.setBlockState(p.add(-radius,y,z), y==5 ? accent : wall, 2);
+                    world.setBlockState(p.add(radius,y,z), y==5 ? accent : wall, 2);
+                }
+            }
+            // Regular crenellations make the wall read as a fortified ninja village.
+            for (int v=-radius; v<=radius; v+=4) {
+                world.setBlockState(p.add(v,6,-radius), accent, 2);
+                world.setBlockState(p.add(v,6,radius), accent, 2);
+                world.setBlockState(p.add(-radius,6,v), accent, 2);
+                world.setBlockState(p.add(radius,6,v), accent, 2);
+            }
+        }
+
+        private void spawnBijuu(World world, BlockPos center, Random random) {
+            // One percent chance per generated village; use AHZNB's registered Bijuu entities only.
+            if (random.nextInt(100) != 0) return;
+            java.util.List<EntityEntry> bijuuTypes = new java.util.ArrayList<EntityEntry>();
+            for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
+                ResourceLocation id = entry.getRegistryName();
+                if (id == null || !"narutomod".equals(id.getResourceDomain())) continue;
+                String path = id.getResourcePath().toLowerCase();
+                if (path.contains("bijuu") || path.contains("tailed_beast") ||
+                    path.contains("tailedbeast") || path.contains("shukaku") ||
+                    path.contains("kurama") || path.contains("gyuki") ||
+                    path.contains("matatabi") || path.contains("isobu") ||
+                    path.contains("son_goku") || path.contains("kokuo") ||
+                    path.contains("saiken") || path.contains("chomei")) {
+                    bijuuTypes.add(entry);
+                }
+            }
+            if (bijuuTypes.isEmpty()) return;
+            Entity bijuu = bijuuTypes.get(random.nextInt(bijuuTypes.size())).newInstance(world);
+            if (bijuu == null) return;
+            BlockPos spawn = world.getTopSolidOrLiquidBlock(center.add(0,0,-32));
+            bijuu.setPosition(spawn.getX()+0.5, spawn.getY(), spawn.getZ()+0.5);
+            world.spawnEntity(bijuu);
         }
 
         private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
