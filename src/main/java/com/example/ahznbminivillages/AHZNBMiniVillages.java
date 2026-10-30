@@ -406,7 +406,7 @@ public class AHZNBMiniVillages {
         }
 
         private void spawnBijuu(World world, BlockPos center, Random random) {
-            // 1% chance per generated village. Spawn one of the Nine Tailed Beasts nearby; never spawn the Ten Tails.
+            // 1% chance per generated village. Spawn 10 blocks outside the perimeter wall; never spawn the Ten Tails.
             if (random.nextInt(100) != 0) return;
             java.util.List<EntityEntry> bijuuTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
@@ -424,11 +424,11 @@ public class AHZNBMiniVillages {
             if (bijuuTypes.isEmpty()) return;
             Entity bijuu = bijuuTypes.get(random.nextInt(bijuuTypes.size())).newInstance(world);
             if (bijuu == null) return;
-            // Spawn inside the village perimeter, 24-32 blocks from its center.
+            // Wall radius is 48 blocks; place the beast at radius 58 (10 blocks beyond the wall).
             double angle = random.nextDouble() * Math.PI * 2.0;
-            int distance = 24 + random.nextInt(9);
-            BlockPos target = center.add((int)(Math.cos(angle) * distance), 0,
-                                         (int)(Math.sin(angle) * distance));
+            int distance = 58;
+            BlockPos target = center.add((int)Math.round(Math.cos(angle) * distance), 0,
+                                         (int)Math.round(Math.sin(angle) * distance));
             BlockPos spawn = world.getTopSolidOrLiquidBlock(target);
             bijuu.setPosition(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
             world.spawnEntity(bijuu);
