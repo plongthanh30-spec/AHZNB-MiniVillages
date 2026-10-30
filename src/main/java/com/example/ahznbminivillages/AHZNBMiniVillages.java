@@ -406,27 +406,31 @@ public class AHZNBMiniVillages {
         }
 
         private void spawnBijuu(World world, BlockPos center, Random random) {
-            // One percent chance per generated village; use AHZNB's registered Bijuu entities only.
+            // 1% chance per generated village. Spawn one of the Nine Tailed Beasts nearby; never spawn the Ten Tails.
             if (random.nextInt(100) != 0) return;
             java.util.List<EntityEntry> bijuuTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
                 if (id == null || !"narutomod".equals(id.getResourceDomain())) continue;
                 String path = id.getResourcePath().toLowerCase();
-                if (path.contains("bijuu") || path.contains("tailed_beast") ||
-                    path.contains("tailedbeast") || path.contains("shukaku") ||
-                    path.contains("kurama") || path.contains("gyuki") ||
-                    path.contains("matatabi") || path.contains("isobu") ||
-                    path.contains("son_goku") || path.contains("kokuo") ||
-                    path.contains("saiken") || path.contains("chomei")) {
+                if ("one_tail".equals(path) || "two_tails".equals(path) ||
+                    "three_tails".equals(path) || "four_tails".equals(path) ||
+                    "five_tails".equals(path) || "six_tails".equals(path) ||
+                    "seven_tails".equals(path) || "eight_tails".equals(path) ||
+                    "nine_tails".equals(path)) {
                     bijuuTypes.add(entry);
                 }
             }
             if (bijuuTypes.isEmpty()) return;
             Entity bijuu = bijuuTypes.get(random.nextInt(bijuuTypes.size())).newInstance(world);
             if (bijuu == null) return;
-            BlockPos spawn = world.getTopSolidOrLiquidBlock(center.add(0,0,-32));
-            bijuu.setPosition(spawn.getX()+0.5, spawn.getY(), spawn.getZ()+0.5);
+            // Spawn inside the village perimeter, 24-32 blocks from its center.
+            double angle = random.nextDouble() * Math.PI * 2.0;
+            int distance = 24 + random.nextInt(9);
+            BlockPos target = center.add((int)(Math.cos(angle) * distance), 0,
+                                         (int)(Math.sin(angle) * distance));
+            BlockPos spawn = world.getTopSolidOrLiquidBlock(target);
+            bijuu.setPosition(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
             world.spawnEntity(bijuu);
         }
 
