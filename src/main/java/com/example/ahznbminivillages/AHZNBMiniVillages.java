@@ -433,7 +433,7 @@ public class AHZNBMiniVillages {
                     }
                 }
                 for (int x : new int[]{-5,5}) {
-                    world.setBlockState(p.add(x,1,-6), Blocks.LANTERN.getDefaultState(), 2);
+                    world.setBlockState(p.add(x,1,-6), Blocks.TORCH.getDefaultState(), 2);
                     world.setBlockState(p.add(x,5,-6), accent, 2);
                 }
             } else if (type == 1) { // Suna: sandstone fortress parapets
