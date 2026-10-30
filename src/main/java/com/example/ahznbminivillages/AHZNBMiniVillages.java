@@ -105,14 +105,16 @@ public class AHZNBMiniVillages {
                              IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
             if (world.isRemote || world.provider.getDimension() != 0) return;
 
-            double chancePerChunk = Math.min(1.0, 256.0 / (spacingBlocks * (double) spacingBlocks));
+            // 2.5x the previous attempt rate (256 -> 640).
+            double chancePerChunk = Math.min(1.0, 640.0 / (spacingBlocks * (double) spacingBlocks));
             if (random.nextDouble() >= chancePerChunk) return;
 
             int x = chunkX * 16 + 3 + random.nextInt(10);
             int z = chunkZ * 16 + 3 + random.nextInt(10);
             BlockPos surface = world.getHeight(new BlockPos(x, 0, z));
             int y = surface.getY();
-            if (y < 63 || y > 115) return;
+            // Supports default Superflat (surface is usually around Y=4) as well as normal terrain.
+            if (y < 4 || y > 250) return;
             if (!isMostlyClear(world, new BlockPos(x, y, z))) return;
 
             int villageType = Math.floorMod((chunkX * 73428767) ^ (chunkZ * 912931), 5);
