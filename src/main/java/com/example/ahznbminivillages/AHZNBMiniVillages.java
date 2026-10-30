@@ -196,7 +196,7 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(dx,-1,dz), (edge ? Blocks.STONEBRICK.getDefaultState() : Blocks.STONE.getDefaultState()), 2);
             }
             buildVillageWalls(world, p, wall, accent);
-            buildVillageGate(world, p.add(0,0,-48), accent, roof);
+            buildVillageGate(world, p.add(0,0,-67), accent, roof);
             buildVillageGarden(world, p, random);
             spawnBijuu(world, p, random);
             spawnVillageResidents(world, p, random);
@@ -399,13 +399,13 @@ public class AHZNBMiniVillages {
             world.spawnEntity(bijuu);
         }
 
-        private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
+        private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {\n            // Grand shinobi gate positioned 67 blocks from the village center.
             // Large ceremonial entrance gate with lanterns and a tiled canopy.
-            for (int y=0; y<=6; y++) {
+            for (int y=0; y<=10; y++) {\n                world.setBlockState(p.add(-7,y,0), accent, 2);\n                world.setBlockState(p.add(7,y,0), accent, 2);\n            }\n            for (int y=0; y<=6; y++) {
                 world.setBlockState(p.add(-5,y,0), accent, 2);
                 world.setBlockState(p.add(5,y,0), accent, 2);
             }
-            for (int x=-6; x<=6; x++) {
+            for (int x=-9; x<=9; x++) {
                 world.setBlockState(p.add(x,6,0), roof, 2);
                 world.setBlockState(p.add(x,7,0), roof, 2);
             }
