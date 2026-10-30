@@ -29,7 +29,7 @@ import java.util.Random;
      dependencies = "after:ahznb")
 public class AHZNBMiniVillages {
     public static final String MODID = "ahznbminivillages";
-    static int spacingBlocks = 300;
+    static int spacingBlocks = 500;
     static String[] ahznbLoot = new String[] {
         "narutomod:anbu_sword",
         "narutomod:chakra_blades",
@@ -93,8 +93,8 @@ public class AHZNBMiniVillages {
         Configuration cfg = new Configuration(new File(event.getModConfigurationDirectory(), MODID + ".cfg"));
         try {
             cfg.load();
-            spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 180, 100, 500,
-                    "Approximate target spacing in blocks. Set between 200 and 500.");
+            spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 500, 500, 700,
+                    "Approximate target center-to-center spacing in blocks. Default 500; tune between 500 and 700.");
             ahznbLoot = cfg.getStringList("ahznbLoot", "loot", ahznbLoot,
                     "Exact AHZNB item registry IDs. Remove entries here to disable them from village chest loot.");
         } finally {
@@ -197,7 +197,7 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(dx,-1,dz), (edge ? Blocks.STONEBRICK.getDefaultState() : Blocks.STONE.getDefaultState()), 2);
             }
             buildVillageWalls(world, p, wall, accent);
-            buildVillageGate(world, p.add(0,0,-67), accent, roof);
+            buildVillageGate(world, p.add(0,0,-129), accent, roof);
             buildVillageGarden(world, p, random);
             spawnBijuu(world, p, random);
             spawnVillageResidents(world, p, random);
@@ -383,7 +383,7 @@ public class AHZNBMiniVillages {
         }
 
         private void buildVillageWalls(World world, BlockPos p, IBlockState wall, IBlockState accent) {
-            int radius=48;
+            int radius=110;
             for (int angle=0; angle<360; angle++) {
                 double rad=Math.toRadians(angle);
                 int x=(int)Math.round(Math.cos(rad)*radius), z=(int)Math.round(Math.sin(rad)*radius);
@@ -412,9 +412,9 @@ public class AHZNBMiniVillages {
             if (bijuuTypes.isEmpty()) return;
             Entity bijuu = bijuuTypes.get(random.nextInt(bijuuTypes.size())).newInstance(world);
             if (bijuu == null) return;
-            // Wall radius is 48 blocks; place the beast at radius 58 (10 blocks beyond the wall).
+            // Wall radius is 110 blocks; place the beast at radius 120 (10 blocks beyond the wall).
             double angle = random.nextDouble() * Math.PI * 2.0;
-            int distance = 58;
+            int distance = 120;
             BlockPos target = center.add((int)Math.round(Math.cos(angle) * distance), 0,
                                          (int)Math.round(Math.sin(angle) * distance));
             BlockPos spawn = world.getTopSolidOrLiquidBlock(target);
@@ -449,13 +449,13 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(x,-1,0), Blocks.STONEBRICK.getDefaultState(), 2);
                 world.setBlockState(p.add(x,0,0), Blocks.STONEBRICK.getDefaultState(), 2);
             }
-            // Continue both sides of the circular wall to the gate at z=-67.
-            for (int z=-67; z<=-47; z++) for (int y=0; y<=5; y++) {
-                world.setBlockState(p.add(-7,y,z+67), y==5 ? accent : accent, 2);
-                world.setBlockState(p.add(7,y,z+67), y==5 ? accent : accent, 2);
+            // Continue both side walls from the gate at z=-129 to the circular wall at z=-110.
+            for (int z=-129; z<=-109; z++) for (int y=0; y<=5; y++) {
+                world.setBlockState(p.add(-7,y,z+129), y==5 ? accent : accent, 2);
+                world.setBlockState(p.add(7,y,z+129), y==5 ? accent : accent, 2);
             }
-            for (int z=-66; z<=-49; z++) for (int x=-7; x<=7; x++)
-                world.setBlockState(p.add(x,-1,z+67), Blocks.STONEBRICK.getDefaultState(), 2);
+            for (int z=-128; z<=-111; z++) for (int x=-7; x<=7; x++)
+                world.setBlockState(p.add(x,-1,z+129), Blocks.STONEBRICK.getDefaultState(), 2);
         }
 
         private void buildVillageGarden(World world, BlockPos p, Random random) {
