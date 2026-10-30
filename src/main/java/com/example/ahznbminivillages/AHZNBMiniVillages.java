@@ -1,6 +1,10 @@
 package com.example.ahznbminivillages;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockBed;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -17,6 +21,8 @@ import net.minecraftforge.fml.common.IWorldGenerator;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.registry.EntityEntry;
 
 import java.io.File;
 import java.util.Random;
@@ -186,6 +192,7 @@ public class AHZNBMiniVillages {
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
                 world.setBlockState(p.add(dx, -1, dz), Blocks.STONEBRICK.getDefaultState(), 2);
             }
+            spawnVillageResidents(world, p, random);
         }
 
         private void buildNinjaHouse(World world, BlockPos p, IBlockState wall, IBlockState roof,
@@ -286,6 +293,46 @@ public class AHZNBMiniVillages {
             if (world.getTileEntity(p.add(3,1,3)) instanceof TileEntityChest)
                 fillChest((TileEntityChest)world.getTileEntity(p.add(3,1,3)), random);
             world.setBlockState(p.add(0,2,0), Blocks.TORCH.getDefaultState(), 2);
+
+            // Furnished living space: bed, work area, shelves, fireplace and carpet.
+            world.setBlockState(p.add(-3,1,2), Blocks.BED.getDefaultState()
+                    .withProperty(BlockBed.PART, BlockBed.EnumPart.FOOT)
+                    .withProperty(BlockBed.FACING, EnumFacing.SOUTH), 2);
+            world.setBlockState(p.add(-3,1,3), Blocks.BED.getDefaultState()
+                    .withProperty(BlockBed.PART, BlockBed.EnumPart.HEAD)
+                    .withProperty(BlockBed.FACING, EnumFacing.SOUTH), 2);
+            world.setBlockState(p.add(-3,1,-2), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
+            world.setBlockState(p.add(-2,1,-2), Blocks.FURNACE.getDefaultState(), 2);
+            world.setBlockState(p.add(2,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
+            world.setBlockState(p.add(2,1,-1), Blocks.BOOKSHELF.getDefaultState(), 2);
+            world.setBlockState(p.add(0,1,2), Blocks.CARPET.getDefaultState(), 2);
+            world.setBlockState(p.add(1,1,2), Blocks.FLOWER_POT.getDefaultState(), 2);
+        }
+
+        private void spawnVillageResidents(World world, BlockPos center, Random random) {
+            // Populate the settlement with ordinary villagers.
+            for (int i=0; i<6; i++) {
+                EntityVillager villager = new EntityVillager(world);
+                BlockPos at = center.add(random.nextInt(25)-12, 0, random.nextInt(25)-12);
+                at = world.getTopSolidOrLiquidBlock(at);
+                villager.setPosition(at.getX()+0.5, at.getY(), at.getZ()+0.5);
+                world.spawnEntity(villager);
+            }
+
+            // Use registered AHZNB entity IDs containing ninja/shinobi when available.
+            int spawned = 0;
+            for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
+                ResourceLocation id = entry.getRegistryName();
+                if (id == null || !"narutomod".equals(id.getResourceDomain())) continue;
+                String path = id.getResourcePath().toLowerCase();
+                if (!path.contains("ninja") && !path.contains("shinobi")) continue;
+                Entity ninja = entry.newInstance(world);
+                if (ninja == null) continue;
+                BlockPos at = world.getTopSolidOrLiquidBlock(center.add(random.nextInt(17)-8, 0, random.nextInt(17)-8));
+                ninja.setPosition(at.getX()+0.5, at.getY(), at.getZ()+0.5);
+                world.spawnEntity(ninja);
+                if (++spawned >= 4) break;
+            }
         }
 
         private void buildGardenTree(World world, BlockPos p, Random random) {
@@ -304,14 +351,14 @@ public class AHZNBMiniVillages {
         }
 
         private void fillChest(TileEntityChest chest, Random random) {
-            put(chest, new ItemStack(Items.IRON_INGOT, 2 + random.nextInt(5)), random);
-            put(chest, new ItemStack(Items.GOLD_INGOT, 1 + random.nextInt(3)), random);
-            put(chest, new ItemStack(Items.ENDER_PEARL, 1 + random.nextInt(2)), random);
-            put(chest, new ItemStack(Items.EXPERIENCE_BOTTLE, 2 + random.nextInt(5)), random);
-            put(chest, new ItemStack(Items.ARROW, 8 + random.nextInt(17)), random);
+            // Keep loot modest: only two vanilla rewards and up to three Naruto items.
+            put(chest, new ItemStack(Items.IRON_INGOT, 1 + random.nextInt(3)), random);
+            put(chest, new ItemStack(Items.EXPERIENCE_BOTTLE, 1 + random.nextInt(2)), random);
 
+            int added = 0;
             for (String raw : ahznbLoot) {
-                if (random.nextBoolean()) {
+                if (added >= 3) break;
+                if (random.nextInt(100) < 10) {
                     String[] parts = raw.trim().split("@");
                     ResourceLocation id = new ResourceLocation(parts[0]);
                     Item item = Item.REGISTRY.getObject(id);
@@ -321,6 +368,7 @@ public class AHZNBMiniVillages {
                             try { meta = Integer.parseInt(parts[1]); } catch (NumberFormatException ignored) {}
                         }
                         put(chest, new ItemStack(item, 1, meta), random);
+                        added++;
                     }
                 }
             }
