@@ -123,8 +123,8 @@ public class AHZNBMiniVillages {
 
         private boolean isMostlyClear(World world, BlockPos p) {
             // Sample the area instead of checking every block to keep world generation light.
-            for (int dx = -16; dx <= 16; dx += 4) {
-                for (int dz = -16; dz <= 16; dz += 4) {
+            for (int dx = -40; dx <= 40; dx += 8) {
+                for (int dz = -40; dz <= 40; dz += 8) {
                     Block b = world.getBlockState(p.add(dx, -1, dz)).getBlock();
                     if (b != Blocks.GRASS && b != Blocks.DIRT && b != Blocks.SAND &&
                         b != Blocks.STONE && b != Blocks.GRAVEL) return false;
@@ -166,12 +166,16 @@ public class AHZNBMiniVillages {
                     break;
             }
 
+            // Ten spacious homes arranged around a broad village center.
             int[][] homes = {
-                {-10,-10}, {-3,-12}, {5,-12}, {12,-7}, {12,2},
-                {8,10}, {0,12}, {-9,10}, {-13,2}, {-12,-6}
+                {-24,-24}, {-7,-31}, {12,-30}, {29,-18}, {32,3},
+                {23,25}, {4,32}, {-17,27}, {-32,9}, {-30,-12}
             };
             for (int[] home : homes) {
-                buildNinjaHouse(world, p.add(home[0], 0, home[1]), wall, roof, accent, random);
+                BlockPos house = p.add(home[0], 0, home[1]);
+                buildNinjaHouse(world, house, wall, roof, accent, random);
+                buildGardenTree(world, house.add(-8, 0, 5), random);
+                buildGardenTree(world, house.add(8, 0, 5), random);
             }
 
             // A simple gravel path and small central meeting point.
@@ -186,67 +190,117 @@ public class AHZNBMiniVillages {
 
         private void buildNinjaHouse(World world, BlockPos p, IBlockState wall, IBlockState roof,
                                      IBlockState accent, Random random) {
-            // Detailed 5x5 ninja house: raised foundation, framed walls, windows and a layered roof.
+            // Large two-storey player-style home with a broad tiered roof.
             IBlockState glass = Blocks.GLASS_PANE.getDefaultState();
             IBlockState fence = Blocks.OAK_FENCE.getDefaultState();
+            IBlockState plank = Blocks.PLANKS.getStateFromMeta(0);
             IBlockState slab = Blocks.WOODEN_SLAB.getDefaultState();
             IBlockState stair = Blocks.OAK_STAIRS.getDefaultState();
 
-            // Foundation and floor.
-            for (int dx = -2; dx <= 2; dx++) {
-                for (int dz = -2; dz <= 2; dz++) {
-                    world.setBlockState(p.add(dx, -1, dz), accent, 2);
-                    world.setBlockState(p.add(dx, 0, dz), wall, 2);
+            // Wide foundation and lower floor (11 x 11).
+            for (int dx=-5; dx<=5; dx++) for (int dz=-5; dz<=5; dz++) {
+                world.setBlockState(p.add(dx,-1,dz), accent, 2);
+                world.setBlockState(p.add(dx,0,dz), plank, 2);
+            }
+
+            // First floor walls, tall windows and a wide front entrance.
+            for (int y=1; y<=4; y++) for (int i=-5; i<=5; i++) {
+                world.setBlockState(p.add(i,y,-5), wall, 2);
+                world.setBlockState(p.add(i,y,5), wall, 2);
+                world.setBlockState(p.add(-5,y,i), wall, 2);
+                world.setBlockState(p.add(5,y,i), wall, 2);
+            }
+            for (int y=1; y<=2; y++) {
+                for (int dx=-1; dx<=1; dx++) world.setBlockToAir(p.add(dx,y,-5));
+            }
+            // Large windows on each facade.
+            for (int y=2; y<=3; y++) for (int dx : new int[]{-3,-2,2,3}) {
+                world.setBlockState(p.add(dx,y,-5), glass, 2);
+                world.setBlockState(p.add(dx,y,5), glass, 2);
+                world.setBlockState(p.add(-5,y,dx), glass, 2);
+                world.setBlockState(p.add(5,y,dx), glass, 2);
+            }
+
+            // Heavy timber corner frames and floor band.
+            for (int dx : new int[]{-5,5}) for (int dz : new int[]{-5,5})
+                for (int y=1; y<=7; y++) world.setBlockState(p.add(dx,y,dz), accent, 2);
+            for (int dx=-5; dx<=5; dx++) for (int dz=-5; dz<=5; dz++) {
+                if (Math.abs(dx)==5 || Math.abs(dz)==5)
+                    world.setBlockState(p.add(dx,4,dz), accent, 2);
+            }
+
+            // Upper storey set slightly inward, with balcony.
+            for (int dx=-4; dx<=4; dx++) for (int dz=-4; dz<=4; dz++) {
+                if (Math.abs(dx)==4 || Math.abs(dz)==4) {
+                    world.setBlockState(p.add(dx,5,dz), wall, 2);
+                    world.setBlockState(p.add(dx,6,dz), wall, 2);
                 }
             }
+            for (int y=5; y<=6; y++) {
+                world.setBlockToAir(p.add(0,y,-4));
+                world.setBlockState(p.add(-2,y,-4), glass, 2);
+                world.setBlockState(p.add(2,y,-4), glass, 2);
+                world.setBlockState(p.add(-4,y,0), glass, 2);
+                world.setBlockState(p.add(4,y,0), glass, 2);
+            }
+            for (int dx=-5; dx<=5; dx++) {
+                world.setBlockState(p.add(dx,5,-6), slab, 2);
+                world.setBlockState(p.add(dx,5,6), slab, 2);
+            }
+            for (int dz=-6; dz<=6; dz++) {
+                world.setBlockState(p.add(-6,5,dz), slab, 2);
+                world.setBlockState(p.add(6,5,dz), slab, 2);
+            }
+            for (int dx=-6; dx<=6; dx+=2) {
+                world.setBlockState(p.add(dx,6,-6), fence, 2);
+                world.setBlockState(p.add(dx,6,6), fence, 2);
+            }
+            for (int dz=-6; dz<=6; dz+=2) {
+                world.setBlockState(p.add(-6,6,dz), fence, 2);
+                world.setBlockState(p.add(6,6,dz), fence, 2);
+            }
 
-            // Three-block-high walls with a centered front entrance.
-            for (int dy = 1; dy <= 3; dy++) {
-                for (int i = -2; i <= 2; i++) {
-                    world.setBlockState(p.add(i, dy, -2), wall, 2);
-                    world.setBlockState(p.add(i, dy, 2), wall, 2);
-                    world.setBlockState(p.add(-2, dy, i), wall, 2);
-                    world.setBlockState(p.add(2, dy, i), wall, 2);
+            // Multi-level Japanese-inspired roof with wide eaves.
+            for (int layer=0; layer<3; layer++) {
+                int radius=6-layer*2;
+                int y=7+layer;
+                for (int dx=-radius; dx<=radius; dx++) for (int dz=-radius; dz<=radius; dz++) {
+                    if (Math.abs(dx)==radius || Math.abs(dz)==radius)
+                        world.setBlockState(p.add(dx,y,dz), roof, 2);
                 }
             }
-            // Open doorway and glass windows on all sides.
-            for (int dy = 1; dy <= 2; dy++) world.setBlockToAir(p.add(0, dy, -2));
-            world.setBlockState(p.add(-1, 2, -2), glass, 2);
-            world.setBlockState(p.add(1, 2, -2), glass, 2);
-            world.setBlockState(p.add(-2, 2, 0), glass, 2);
-            world.setBlockState(p.add(2, 2, 0), glass, 2);
-            world.setBlockState(p.add(0, 2, 2), glass, 2);
+            for (int dx=-2; dx<=2; dx++) for (int dz=-2; dz<=2; dz++)
+                world.setBlockState(p.add(dx,10,dz), roof, 2);
+            world.setBlockState(p.add(0,11,0), accent, 2);
 
-            // Corner pillars and decorative trim.
-            for (int dx : new int[]{-2, 2}) for (int dz : new int[]{-2, 2}) {
-                for (int dy = 1; dy <= 3; dy++) world.setBlockState(p.add(dx, dy, dz), accent, 2);
+            // Grand front staircase, porch, lanterns and interior storage.
+            for (int z=-9; z<=-6; z++) for (int dx=-2; dx<=2; dx++)
+                world.setBlockState(p.add(dx,0,z), accent, 2);
+            for (int dx=-2; dx<=2; dx++) {
+                world.setBlockState(p.add(dx,1,-7), stair, 2);
+                world.setBlockState(p.add(dx,1,-6), slab, 2);
             }
-            for (int dx = -2; dx <= 2; dx++) {
-                world.setBlockState(p.add(dx, 3, -2), accent, 2);
-                world.setBlockState(p.add(dx, 3, 2), accent, 2);
-            }
+            world.setBlockState(p.add(-3,3,-5), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(3,3,-5), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(3,1,3), Blocks.CHEST.getDefaultState(), 2);
+            if (world.getTileEntity(p.add(3,1,3)) instanceof TileEntityChest)
+                fillChest((TileEntityChest)world.getTileEntity(p.add(3,1,3)), random);
+            world.setBlockState(p.add(0,2,0), Blocks.TORCH.getDefaultState(), 2);
+        }
 
-            // Layered, overhanging roof silhouette.
-            for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
-                if (Math.abs(dx) == 2 || Math.abs(dz) == 2)
-                    world.setBlockState(p.add(dx, 4, dz), roof, 2);
+        private void buildGardenTree(World world, BlockPos p, Random random) {
+            // Small landscaped trees and flower beds around each home.
+            int height=3+random.nextInt(2);
+            for (int y=0; y<height; y++)
+                world.setBlockState(p.add(0,y,0), Blocks.LOG.getDefaultState(), 2);
+            for (int dx=-2; dx<=2; dx++) for (int dz=-2; dz<=2; dz++) {
+                for (int dy=height-1; dy<=height+1; dy++) {
+                    if (Math.abs(dx)+Math.abs(dz)+(dy==height?0:1)<=4)
+                        world.setBlockState(p.add(dx,dy,dz), Blocks.LEAVES.getDefaultState(), 2);
+                }
             }
-            for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
-                world.setBlockState(p.add(dx, 5, dz), roof, 2);
-            world.setBlockState(p.add(0, 6, 0), accent, 2);
-
-            // Interior lighting, chest and simple entry porch.
-            world.setBlockState(p.add(0, 2, 0), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(1, 1, 1), Blocks.CHEST.getDefaultState(), 2);
-            if (world.getTileEntity(p.add(1, 1, 1)) instanceof TileEntityChest) {
-                fillChest((TileEntityChest) world.getTileEntity(p.add(1, 1, 1)), random);
-            }
-            for (int dx = -1; dx <= 1; dx++) {
-                world.setBlockState(p.add(dx, 0, -3), slab, 2);
-            }
-            world.setBlockState(p.add(-2, 1, -3), fence, 2);
-            world.setBlockState(p.add(2, 1, -3), fence, 2);
-            world.setBlockState(p.add(0, 1, -3), stair, 2);
+            world.setBlockState(p.add(1,0,1), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
+            world.setBlockState(p.add(-1,0,-1), Blocks.RED_FLOWER.getDefaultState(), 2);
         }
 
         private void fillChest(TileEntityChest chest, Random random) {
