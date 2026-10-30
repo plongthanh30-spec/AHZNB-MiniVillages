@@ -184,14 +184,17 @@ public class AHZNBMiniVillages {
                 buildGardenTree(world, house.add(8, 0, 5), random);
             }
 
-            // A simple gravel path and small central meeting point.
-            for (int z = -15; z <= 15; z++) {
-                world.setBlockState(p.add(0, -1, z), Blocks.GRAVEL.getDefaultState(), 2);
-                world.setBlockState(p.add(1, -1, z), Blocks.GRAVEL.getDefaultState(), 2);
+            // Broad landscaped main avenue, branching paths and a decorated central square.
+            for (int z=-38; z<=38; z++) for (int dx=-2; dx<=2; dx++)
+                world.setBlockState(p.add(dx,-1,z), (dx==0 ? Blocks.STONEBRICK : Blocks.GRAVEL).getDefaultState(), 2);
+            for (int x=-38; x<=38; x++) for (int dz=-2; dz<=2; dz++)
+                world.setBlockState(p.add(x,-1,dz), (dz==0 ? Blocks.STONEBRICK : Blocks.GRAVEL).getDefaultState(), 2);
+            for (int dx=-7; dx<=7; dx++) for (int dz=-7; dz<=7; dz++) {
+                boolean edge=Math.abs(dx)==7 || Math.abs(dz)==7;
+                world.setBlockState(p.add(dx,-1,dz), (edge ? Blocks.STONEBRICK.getDefaultState() : Blocks.STONE.getDefaultState()), 2);
             }
-            for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
-                world.setBlockState(p.add(dx, -1, dz), Blocks.STONEBRICK.getDefaultState(), 2);
-            }
+            buildVillageGate(world, p.add(0,0,-40), accent, roof);
+            buildVillageGarden(world, p, random);
             spawnVillageResidents(world, p, random);
         }
 
@@ -269,16 +272,22 @@ public class AHZNBMiniVillages {
 
             // Multi-level Japanese-inspired roof with wide eaves.
             for (int layer=0; layer<3; layer++) {
-                int radius=6-layer*2;
+                int radius=7-layer*2;
                 int y=7+layer;
                 for (int dx=-radius; dx<=radius; dx++) for (int dz=-radius; dz<=radius; dz++) {
-                    if (Math.abs(dx)==radius || Math.abs(dz)==radius)
+                    // Filled roof tiers look like a real Japanese tiled roof, not a hollow outline.
+                    if (Math.abs(dx)<=radius && Math.abs(dz)<=radius)
                         world.setBlockState(p.add(dx,y,dz), roof, 2);
+                }
+                for (int i=-radius; i<=radius; i+=2) {
+                    world.setBlockState(p.add(i,y+1,-radius), accent, 2);
+                    world.setBlockState(p.add(i,y+1,radius), accent, 2);
                 }
             }
             for (int dx=-2; dx<=2; dx++) for (int dz=-2; dz<=2; dz++)
                 world.setBlockState(p.add(dx,10,dz), roof, 2);
             world.setBlockState(p.add(0,11,0), accent, 2);
+            world.setBlockState(p.add(0,12,0), Blocks.GLOWSTONE.getDefaultState(), 2);
 
             // Grand front staircase, porch, lanterns and interior storage.
             for (int z=-9; z<=-6; z++) for (int dx=-2; dx<=2; dx++)
@@ -307,6 +316,45 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(2,1,-1), Blocks.BOOKSHELF.getDefaultState(), 2);
             world.setBlockState(p.add(0,1,2), Blocks.CARPET.getDefaultState(), 2);
             world.setBlockState(p.add(1,1,2), Blocks.FLOWER_POT.getDefaultState(), 2);
+        }
+
+        private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
+            // Large ceremonial entrance gate with lanterns and a tiled canopy.
+            for (int y=0; y<=6; y++) {
+                world.setBlockState(p.add(-5,y,0), accent, 2);
+                world.setBlockState(p.add(5,y,0), accent, 2);
+            }
+            for (int x=-6; x<=6; x++) {
+                world.setBlockState(p.add(x,6,0), roof, 2);
+                world.setBlockState(p.add(x,7,0), roof, 2);
+            }
+            for (int x=-4; x<=4; x++) {
+                world.setBlockState(p.add(x,5,0), accent, 2);
+                world.setBlockState(p.add(x,4,0), Blocks.AIR.getDefaultState(), 2);
+            }
+            world.setBlockState(p.add(-5,4,-1), Blocks.GLOWSTONE.getDefaultState(), 2);
+            world.setBlockState(p.add(5,4,-1), Blocks.GLOWSTONE.getDefaultState(), 2);
+        }
+
+        private void buildVillageGarden(World world, BlockPos p, Random random) {
+            // Four small ponds and lamp posts make the center feel lived-in.
+            for (int side : new int[]{-1,1}) {
+                BlockPos pond=p.add(side*12, -1, side*12);
+                for (int dx=-2; dx<=2; dx++) for (int dz=-2; dz<=2; dz++) {
+                    if (Math.abs(dx)+Math.abs(dz)<=3) {
+                        world.setBlockState(pond.add(dx,0,dz), Blocks.WATER.getDefaultState(), 2);
+                        if (Math.abs(dx)+Math.abs(dz)==3)
+                            world.setBlockState(pond.add(dx,0,dz), Blocks.STONEBRICK.getDefaultState(), 2);
+                    }
+                }
+            }
+            for (int x : new int[]{-8,8}) for (int z : new int[]{-8,8}) {
+                for (int y=0; y<=3; y++)
+                    world.setBlockState(p.add(x,y,z), Blocks.FENCE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,4,z), Blocks.GLOWSTONE.getDefaultState(), 2);
+                world.setBlockState(p.add(x+1,0,z), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
+                world.setBlockState(p.add(x-1,0,z), Blocks.RED_FLOWER.getDefaultState(), 2);
+            }
         }
 
         private void spawnVillageResidents(World world, BlockPos center, Random random) {
