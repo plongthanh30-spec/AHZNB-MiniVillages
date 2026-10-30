@@ -120,8 +120,9 @@ public class AHZNBMiniVillages {
         }
 
         private boolean isMostlyClear(World world, BlockPos p) {
-            for (int dx = -16; dx <= 16; dx++) {
-                for (int dz = -16; dz <= 16; dz++) {
+            // Sample the area instead of checking every block to keep world generation light.
+            for (int dx = -16; dx <= 16; dx += 4) {
+                for (int dz = -16; dz <= 16; dz += 4) {
                     Block b = world.getBlockState(p.add(dx, -1, dz)).getBlock();
                     if (b != Blocks.GRASS && b != Blocks.DIRT && b != Blocks.SAND &&
                         b != Blocks.STONE && b != Blocks.GRAVEL) return false;
@@ -132,69 +133,81 @@ public class AHZNBMiniVillages {
         }
 
         private void buildVillage(World world, BlockPos p, int type, Random random) {
-            IBlockState wall = Blocks.PLANKS.getStateFromMeta(0);
-            IBlockState roof = Blocks.STAINED_CLAY.getStateFromMeta(14);
-            IBlockState floor = Blocks.PLANKS.getStateFromMeta(0);
-            IBlockState accent = Blocks.LOG.getDefaultState();
-
-            // Ten Hidden Leaf-style ninja houses around a central plaza.
-            for (int dx = -15; dx <= 15; dx++) for (int dz = -15; dz <= 15; dz++) {
-                world.setBlockState(p.add(dx, -1, dz), floor, 2);
+            IBlockState wall;
+            IBlockState roof;
+            IBlockState accent;
+            switch (type) {
+                case 0: // Konoha - wood and red roofs
+                    wall = Blocks.PLANKS.getStateFromMeta(0);
+                    roof = Blocks.STAINED_HARDENED_CLAY.getStateFromMeta(14);
+                    accent = Blocks.LOG.getDefaultState();
+                    break;
+                case 1: // Suna - sandstone
+                    wall = Blocks.SANDSTONE.getDefaultState();
+                    roof = Blocks.SANDSTONE.getStateFromMeta(2);
+                    accent = Blocks.SANDSTONE.getStateFromMeta(1);
+                    break;
+                case 2: // Iwa - stone
+                    wall = Blocks.STONEBRICK.getDefaultState();
+                    roof = Blocks.STONEBRICK.getStateFromMeta(3);
+                    accent = Blocks.COBBLESTONE.getDefaultState();
+                    break;
+                case 3: // Kumo - bright quartz
+                    wall = Blocks.QUARTZ_BLOCK.getDefaultState();
+                    roof = Blocks.QUARTZ_BLOCK.getStateFromMeta(1);
+                    accent = Blocks.IRON_BLOCK.getDefaultState();
+                    break;
+                default: // Kiri - dark brick
+                    wall = Blocks.NETHER_BRICK.getDefaultState();
+                    roof = Blocks.NETHER_BRICK.getDefaultState();
+                    accent = Blocks.NETHER_BRICK.getDefaultState();
+                    break;
             }
+
             int[][] homes = {
                 {-10,-10}, {-3,-12}, {5,-12}, {12,-7}, {12,2},
                 {8,10}, {0,12}, {-9,10}, {-13,2}, {-12,-6}
             };
             for (int[] home : homes) {
-                buildNinjaHouse(world, p.add(home[0], 0, home[1]), wall, roof, accent);
+                buildNinjaHouse(world, p.add(home[0], 0, home[1]), wall, roof, accent, random);
             }
-            for (int x = -2; x <= 2; x++) for (int z = -15; z <= 15; z++) {
-                world.setBlockState(p.add(x, -1, z), Blocks.PATH.getDefaultState(), 2);
+
+            // A simple gravel path and small central meeting point.
+            for (int z = -15; z <= 15; z++) {
+                world.setBlockState(p.add(0, -1, z), Blocks.GRAVEL.getDefaultState(), 2);
+                world.setBlockState(p.add(1, -1, z), Blocks.GRAVEL.getDefaultState(), 2);
             }
-            // Konoha-style entrance gate.
-            for (int dx = -3; dx <= 3; dx++) {
-                world.setBlockState(p.add(dx, 0, -15), accent, 2);
-                world.setBlockState(p.add(dx, 1, -15), accent, 2);
-            }
-            world.setBlockState(p.add(0, 2, -15), Blocks.GLOWSTONE.getDefaultState(), 2);
-            // Central Hokage-style tower.
             for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
-                world.setBlockState(p.add(dx, 0, dz), Blocks.STONEBRICK.getDefaultState(), 2);
+                world.setBlockState(p.add(dx, -1, dz), Blocks.STONEBRICK.getDefaultState(), 2);
             }
-            for (int dy = 1; dy <= 5; dy++) {
-                world.setBlockState(p.add(0, dy, 0), wall, 2);
-                world.setBlockState(p.add(1, dy, 0), wall, 2);
-                world.setBlockState(p.add(0, dy, 1), wall, 2);
-                world.setBlockState(p.add(1, dy, 1), wall, 2);
-            }
-            for (int dx = -2; dx <= 3; dx++) for (int dz = -2; dz <= 3; dz++) {
-                world.setBlockState(p.add(dx, 6, dz), roof, 2);
-            }
-            world.setBlockState(p.add(0, 7, 0), Blocks.GLOWSTONE.getDefaultState(), 2);
-            world.setBlockState(p, Blocks.CHEST.getDefaultState(), 2);
-            if (world.getTileEntity(p) instanceof TileEntityChest) fillChest((TileEntityChest) world.getTileEntity(p), random);
         }
 
-        private void buildNinjaHouse(World world, BlockPos p, IBlockState wall, IBlockState roof, IBlockState accent) {
-            for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
-                world.setBlockState(p.add(dx, 0, dz), wall, 2);
-                boolean edge = Math.abs(dx) == 2 || Math.abs(dz) == 2;
-                for (int dy = 1; dy <= 3; dy++) {
-                    if (edge && !(dy <= 2 && dx == 0 && dz == -2)) {
-                        world.setBlockState(p.add(dx, dy, dz), wall, 2);
-                    } else {
-                        world.setBlockToAir(p.add(dx, dy, dz));
+        private void buildNinjaHouse(World world, BlockPos p, IBlockState wall, IBlockState roof,
+                                     IBlockState accent, Random random) {
+            // Compact 5x5 house with a simple roof and one chest inside.
+            for (int dx = -2; dx <= 2; dx++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    world.setBlockState(p.add(dx, -1, dz), wall, 2);
+                    boolean edge = Math.abs(dx) == 2 || Math.abs(dz) == 2;
+                    for (int dy = 0; dy <= 2; dy++) {
+                        if (edge && !(dy < 2 && dx == 0 && dz == -2)) {
+                            world.setBlockState(p.add(dx, dy, dz), wall, 2);
+                        } else {
+                            world.setBlockToAir(p.add(dx, dy, dz));
+                        }
                     }
+                    if (edge) world.setBlockState(p.add(dx, 3, dz), roof, 2);
                 }
-                if (edge) world.setBlockState(p.add(dx, 4, dz), roof, 2);
             }
             for (int dx = -2; dx <= 2; dx++) {
-                world.setBlockState(p.add(dx, 5, 0), roof, 2);
-                world.setBlockState(p.add(dx, 1, -2), accent, 2);
-                world.setBlockState(p.add(dx, 1, 2), accent, 2);
+                world.setBlockState(p.add(dx, 4, 0), roof, 2);
+            }
+            world.setBlockState(p.add(0, 1, 1), Blocks.CHEST.getDefaultState(), 2);
+            if (world.getTileEntity(p.add(0, 1, 1)) instanceof TileEntityChest) {
+                fillChest((TileEntityChest) world.getTileEntity(p.add(0, 1, 1)), random);
             }
             world.setBlockState(p.add(0, 1, -1), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(0, 3, 0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(0, 2, 0), accent, 2);
         }
 
         private void fillChest(TileEntityChest chest, Random random) {
