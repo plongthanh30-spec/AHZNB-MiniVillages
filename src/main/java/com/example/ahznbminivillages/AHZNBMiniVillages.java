@@ -170,17 +170,21 @@ public class AHZNBMiniVillages {
                     break;
             }
 
-            // Ten spacious homes arranged around a broad village center.
+            // Eleven varied homes around a larger central residence.
             int[][] homes = {
-                {-24,-24}, {-7,-31}, {12,-30}, {29,-18}, {32,3},
-                {23,25}, {4,32}, {-17,27}, {-32,9}, {-30,-12}
+                {-29,-27}, {-9,-34}, {14,-34}, {34,-22}, {37,2},
+                {29,29}, {6,37}, {-19,32}, {-37,12}, {-35,-13}, {0,42}
             };
-            for (int[] home : homes) {
-                BlockPos house = p.add(home[0], 0, home[1]);
+            for (int i=0; i<homes.length; i++) {
+                BlockPos house = p.add(homes[i][0], 0, homes[i][1]);
                 buildNinjaHouse(world, house, wall, roof, accent, random);
-                buildGardenTree(world, house.add(-8, 0, 5), random);
-                buildGardenTree(world, house.add(8, 0, 5), random);
+                // Small style variations: porch pillars, flower beds and side lamps.
+                if (i%3==0) world.setBlockState(house.add(0,3,-6), accent, 2);
+                if (i%3==1) world.setBlockState(house.add(0,3,6), Blocks.GLOWSTONE.getDefaultState(), 2);
+                buildGardenTree(world, house.add(-9, 0, 6), random);
+                buildGardenTree(world, house.add(9, 0, 6), random);
             }
+            buildCentralResidence(world, p, wall, roof, accent, random);
 
             // Broad landscaped main avenue, branching paths and a decorated central square.
             for (int z=-38; z<=38; z++) for (int dx=-2; dx<=2; dx++)
@@ -301,15 +305,67 @@ public class AHZNBMiniVillages {
                 fillChest((TileEntityChest)world.getTileEntity(p.add(3,1,3)), random);
             world.setBlockState(p.add(0,2,0), Blocks.TORCH.getDefaultState(), 2);
 
-            // Furnished living space: bed, work area, shelves, fireplace and carpet.
+            // Two separate beds, plus work area, shelves and carpet.
             world.setBlockState(p.add(-3,1,2), Blocks.BED.getStateFromMeta(0), 2);
             world.setBlockState(p.add(-3,1,3), Blocks.BED.getStateFromMeta(8), 2);
+            world.setBlockState(p.add(3,1,-3), Blocks.BED.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(3,1,-2), Blocks.BED.getStateFromMeta(8), 2);
             world.setBlockState(p.add(-3,1,-2), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
             world.setBlockState(p.add(-2,1,-2), Blocks.FURNACE.getDefaultState(), 2);
             world.setBlockState(p.add(2,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
             world.setBlockState(p.add(2,1,-1), Blocks.BOOKSHELF.getDefaultState(), 2);
             world.setBlockState(p.add(0,1,2), Blocks.CARPET.getDefaultState(), 2);
             world.setBlockState(p.add(1,1,2), Blocks.FLOWER_POT.getDefaultState(), 2);
+        }
+
+        private void buildCentralResidence(World world, BlockPos p, IBlockState wall,
+                                            IBlockState roof, IBlockState accent, Random random) {
+            // Oversized 17x17 landmark home at the exact center of each village.
+            for (int dx=-8; dx<=8; dx++) for (int dz=-8; dz<=8; dz++) {
+                world.setBlockState(p.add(dx,-1,dz), accent, 2);
+                if (Math.abs(dx)==8 || Math.abs(dz)==8) {
+                    for (int y=1; y<=5; y++) world.setBlockState(p.add(dx,y,dz), wall, 2);
+                } else {
+                    world.setBlockState(p.add(dx,0,dz), Blocks.PLANKS.getDefaultState(), 2);
+                }
+            }
+            // Large front doors and tall windows.
+            for (int y=1; y<=3; y++) for (int dx=-1; dx<=1; dx++)
+                world.setBlockToAir(p.add(dx,y,-8));
+            for (int y=2; y<=4; y++) for (int dx : new int[]{-6,-5,5,6}) {
+                world.setBlockState(p.add(dx,y,-8), Blocks.GLASS_PANE.getDefaultState(), 2);
+                world.setBlockState(p.add(dx,y,8), Blocks.GLASS_PANE.getDefaultState(), 2);
+            }
+            for (int y=1; y<=5; y++) {
+                world.setBlockState(p.add(-8,y,-8), accent, 2);
+                world.setBlockState(p.add(8,y,-8), accent, 2);
+                world.setBlockState(p.add(-8,y,8), accent, 2);
+                world.setBlockState(p.add(8,y,8), accent, 2);
+            }
+            // Wide layered roof with a raised ridge and decorative finial.
+            for (int layer=0; layer<4; layer++) {
+                int r=10-layer*2;
+                for (int dx=-r; dx<=r; dx++) for (int dz=-r; dz<=r; dz++)
+                    world.setBlockState(p.add(dx,6+layer,dz), roof, 2);
+            }
+            for (int dx=-3; dx<=3; dx++) for (int dz=-3; dz<=3; dz++)
+                world.setBlockState(p.add(dx,10,dz), accent, 2);
+            world.setBlockState(p.add(0,11,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            // Furnish the central hall and place two pairs of beds.
+            world.setBlockState(p.add(-5,1,3), Blocks.BED.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(-5,1,4), Blocks.BED.getStateFromMeta(8), 2);
+            world.setBlockState(p.add(5,1,3), Blocks.BED.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(5,1,4), Blocks.BED.getStateFromMeta(8), 2);
+            world.setBlockState(p.add(-4,1,-3), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
+            world.setBlockState(p.add(-3,1,-3), Blocks.FURNACE.getDefaultState(), 2);
+            world.setBlockState(p.add(4,1,-3), Blocks.BOOKSHELF.getDefaultState(), 2);
+            world.setBlockState(p.add(5,1,-3), Blocks.BOOKSHELF.getDefaultState(), 2);
+            world.setBlockState(p.add(0,1,0), Blocks.CARPET.getDefaultState(), 2);
+            world.setBlockState(p.add(-2,2,-7), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(2,2,-7), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(0,1,5), Blocks.CHEST.getDefaultState(), 2);
+            if (world.getTileEntity(p.add(0,1,5)) instanceof TileEntityChest)
+                fillChest((TileEntityChest)world.getTileEntity(p.add(0,1,5)), random);
         }
 
         private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
@@ -353,7 +409,7 @@ public class AHZNBMiniVillages {
 
         private void spawnVillageResidents(World world, BlockPos center, Random random) {
             // Populate the settlement with ordinary villagers.
-            for (int i=0; i<6; i++) {
+            for (int i=0; i<8; i++) {
                 EntityVillager villager = new EntityVillager(world);
                 BlockPos at = center.add(random.nextInt(25)-12, 0, random.nextInt(25)-12);
                 at = world.getTopSolidOrLiquidBlock(at);
@@ -361,19 +417,23 @@ public class AHZNBMiniVillages {
                 world.spawnEntity(villager);
             }
 
-            // Use registered AHZNB entity IDs containing ninja/shinobi when available.
-            int spawned = 0;
+            // Spawn twelve AHZNB ninja/shinobi, cycling available matching entity types.
+            java.util.List<EntityEntry> ninjaTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
                 if (id == null || !"narutomod".equals(id.getResourceDomain())) continue;
                 String path = id.getResourcePath().toLowerCase();
                 if (!path.contains("ninja") && !path.contains("shinobi")) continue;
-                Entity ninja = entry.newInstance(world);
-                if (ninja == null) continue;
-                BlockPos at = world.getTopSolidOrLiquidBlock(center.add(random.nextInt(17)-8, 0, random.nextInt(17)-8));
-                ninja.setPosition(at.getX()+0.5, at.getY(), at.getZ()+0.5);
-                world.spawnEntity(ninja);
-                if (++spawned >= 4) break;
+                ninjaTypes.add(entry);
+            }
+            if (!ninjaTypes.isEmpty()) {
+                for (int i=0; i<12; i++) {
+                    Entity ninja = ninjaTypes.get(i % ninjaTypes.size()).newInstance(world);
+                    if (ninja == null) continue;
+                    BlockPos at = world.getTopSolidOrLiquidBlock(center.add(random.nextInt(25)-12, 0, random.nextInt(25)-12));
+                    ninja.setPosition(at.getX()+0.5, at.getY(), at.getZ()+0.5);
+                    world.spawnEntity(ninja);
+                }
             }
         }
 
