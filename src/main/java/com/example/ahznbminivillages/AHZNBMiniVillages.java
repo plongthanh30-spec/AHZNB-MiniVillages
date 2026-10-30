@@ -323,7 +323,12 @@ public class AHZNBMiniVillages {
             // Two loot chests placed on opposite sides of the ground floor.
             placeLootChest(world, p.add(-3,1,3), random);
             placeLootChest(world, p.add(3,1,3), random);
-            world.setBlockState(p.add(0,3,0), Blocks.GLOWSTONE.getDefaultState(), 2);\n            world.setBlockState(p.add(-4,3,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(4,3,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(0,6,0), Blocks.GLOWSTONE.getDefaultState(), 2);\n            world.setBlockState(p.add(-3,6,0), Blocks.TORCH.getDefaultState(), 2);\n            world.setBlockState(p.add(3,6,0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(0,3,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            world.setBlockState(p.add(-4,3,0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(4,3,0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(0,6,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            world.setBlockState(p.add(-3,6,0), Blocks.TORCH.getDefaultState(), 2);
+            world.setBlockState(p.add(3,6,0), Blocks.TORCH.getDefaultState(), 2);
 
             // Two separate beds, plus work area, shelves and carpet.
             world.setBlockState(p.add(-3,1,2), Blocks.BED.getStateFromMeta(0), 2);
@@ -410,9 +415,14 @@ public class AHZNBMiniVillages {
             world.spawnEntity(bijuu);
         }
 
-        private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {\n            // Grand shinobi gate positioned 67 blocks from the village center.
+        private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
+            // Grand shinobi gate positioned 67 blocks from the village center.
             // Large ceremonial entrance gate with lanterns and a tiled canopy.
-            for (int y=0; y<=10; y++) {\n                world.setBlockState(p.add(-7,y,0), accent, 2);\n                world.setBlockState(p.add(7,y,0), accent, 2);\n            }\n            for (int y=0; y<=6; y++) {
+            for (int y=0; y<=10; y++) {
+                world.setBlockState(p.add(-7,y,0), accent, 2);
+                world.setBlockState(p.add(7,y,0), accent, 2);
+            }
+            for (int y=0; y<=6; y++) {
                 world.setBlockState(p.add(-5,y,0), accent, 2);
                 world.setBlockState(p.add(5,y,0), accent, 2);
             }
