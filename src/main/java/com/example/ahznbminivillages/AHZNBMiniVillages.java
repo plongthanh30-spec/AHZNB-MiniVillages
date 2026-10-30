@@ -29,7 +29,7 @@ import java.util.Random;
      dependencies = "after:ahznb")
 public class AHZNBMiniVillages {
     public static final String MODID = "ahznbminivillages";
-    static int spacingBlocks = 500;
+    static int spacingBlocks = 670;
     static String[] ahznbLoot = new String[] {
         "narutomod:anbu_sword",
         "narutomod:chakra_blades",
@@ -93,8 +93,8 @@ public class AHZNBMiniVillages {
         Configuration cfg = new Configuration(new File(event.getModConfigurationDirectory(), MODID + ".cfg"));
         try {
             cfg.load();
-            spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 500, 500, 700,
-                    "Approximate target center-to-center spacing in blocks. Default 500; tune between 500 and 700.");
+            spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 670, 670, 900,
+                    "Approximate target center-to-center spacing in blocks. Default 670; tune between 670 and 900.");
             ahznbLoot = cfg.getStringList("ahznbLoot", "loot", ahznbLoot,
                     "Exact AHZNB item registry IDs. Remove entries here to disable them from village chest loot.");
         } finally {
