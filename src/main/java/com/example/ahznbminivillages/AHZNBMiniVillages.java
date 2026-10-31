@@ -24,7 +24,10 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.IWorldGenerator;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 
@@ -35,6 +38,29 @@ import java.util.Random;
      dependencies = "after:ahznb")
 public class AHZNBMiniVillages {
     public static final String MODID = "ahznbminivillages";
+
+    public static Item SUMMONING_ORB;
+
+    @Mod.EventBusSubscriber(modid = MODID)
+    public static class ItemRegistry {
+        @SubscribeEvent
+        public static void registerItems(RegistryEvent.Register<Item> event) {
+            SUMMONING_ORB = new SummoningOrbItem();
+            SUMMONING_ORB.setRegistryName(MODID, "bijuu_summoning_orb");
+            SUMMONING_ORB.setUnlocalizedName(MODID + ".bijuu_summoning_orb");
+            SUMMONING_ORB.setMaxStackSize(16);
+            event.getRegistry().register(SUMMONING_ORB);
+        }
+    }
+
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent event) {
+        GameRegistry.addShapedRecipe(new ResourceLocation(MODID, "bijuu_summoning_orb"),
+                new ResourceLocation(MODID, "recipes"),
+                new ItemStack(SUMMONING_ORB),
+                "EEE", "EDE", "EEE", 'E', Items.EMERALD, 'D', Items.DIAMOND);
+    }
+
     static int spacingBlocks = 670;
     static String[] ahznbLoot = new String[] {
         "narutomod:anbu_sword",
