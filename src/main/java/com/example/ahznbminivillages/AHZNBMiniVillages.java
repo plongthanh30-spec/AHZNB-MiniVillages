@@ -11,6 +11,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.world.storage.MapStorage;
+import net.minecraftforge.common.util.Constants;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
@@ -103,6 +109,63 @@ public class AHZNBMiniVillages {
         GameRegistry.registerWorldGenerator(new MiniVillageGenerator(), 10);
     }
 
+    private static class MiniVillageLocations extends WorldSavedData {
+        private static final String DATA_NAME = "ahznbminivillages_locations";
+        private final java.util.List<int[]> centers = new java.util.ArrayList<int[]>();
+
+        public MiniVillageLocations() { super(DATA_NAME); }
+        public MiniVillageLocations(String name) { super(name); }
+
+        @Override
+        public void readFromNBT(NBTTagCompound nbt) {
+            centers.clear();
+            NBTTagList list = nbt.getTagList("Centers", Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < list.tagCount(); i++) {
+                NBTTagCompound tag = list.getCompoundTagAt(i);
+                centers.add(new int[] {tag.getInteger("X"), tag.getInteger("Z")});
+            }
+        }
+
+        @Override
+        public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+            NBTTagList list = new NBTTagList();
+            for (int[] center : centers) {
+                NBTTagCompound tag = new NBTTagCompound();
+                tag.setInteger("X", center[0]);
+                tag.setInteger("Z", center[1]);
+                list.appendTag(tag);
+            }
+            nbt.setTag("Centers", list);
+            return nbt;
+        }
+
+        boolean isTooClose(int x, int z, int minDistance) {
+            long minSq = (long) minDistance * minDistance;
+            for (int[] center : centers) {
+                long dx = (long)x - center[0];
+                long dz = (long)z - center[1];
+                if (dx * dx + dz * dz < minSq) return true;
+            }
+            return false;
+        }
+
+        void addCenter(int x, int z) {
+            centers.add(new int[] {x, z});
+            markDirty();
+        }
+    }
+
+    private static MiniVillageLocations getVillageLocations(World world) {
+        MapStorage storage = world.getPerWorldStorage();
+        MiniVillageLocations data = (MiniVillageLocations) storage.getOrLoadData(
+                MiniVillageLocations.class, MiniVillageLocations.DATA_NAME);
+        if (data == null) {
+            data = new MiniVillageLocations();
+            storage.setData(MiniVillageLocations.DATA_NAME, data);
+        }
+        return data;
+    }
+
     private static class MiniVillageGenerator implements IWorldGenerator {
         @Override
         public void generate(Random random, int chunkX, int chunkZ, World world,
@@ -122,9 +185,13 @@ public class AHZNBMiniVillages {
             if (!isMostlyClear(world, new BlockPos(x, y, z))) return;
             // Keep generated settlements well away from existing vanilla villages.
             if (world.getVillageCollection().getNearestVillage(new BlockPos(x, y, z), 160) != null) return;
+            // Enforce real minimum spacing between this mod's villages.
+            MiniVillageLocations locations = getVillageLocations(world);
+            if (locations.isTooClose(x, z, spacingBlocks)) return;
 
             int villageType = Math.floorMod((chunkX * 73428767) ^ (chunkZ * 912931), 5);
             buildVillage(world, new BlockPos(x, y, z), villageType, random);
+            locations.addCenter(x, z);
         }
 
         private boolean isMostlyClear(World world, BlockPos p) {
