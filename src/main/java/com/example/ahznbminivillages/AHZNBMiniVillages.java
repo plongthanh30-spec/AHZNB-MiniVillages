@@ -117,8 +117,8 @@ public class AHZNBMiniVillages {
             int z = chunkZ * 16 + 3 + random.nextInt(10);
             BlockPos surface = world.getHeight(new BlockPos(x, 0, z));
             int y = surface.getY();
-            // Supports default Superflat (surface is usually around Y=4) as well as normal terrain.
-            if (y < 4 || y > 250) return;
+            // Allow lower terrain while avoiding bedrock-level placement.
+            if (y < 2 || y > 250) return;
             if (!isMostlyClear(world, new BlockPos(x, y, z))) return;
             // Keep generated settlements well away from existing vanilla villages.
             if (world.getVillageCollection().getNearestVillage(new BlockPos(x, y, z), 160) != null) return;
@@ -130,7 +130,7 @@ public class AHZNBMiniVillages {
         private boolean isMostlyClear(World world, BlockPos p) {
             // Reject tree trunks/canopies at the village center and across a wide sample
             // of the settlement footprint, so the village is placed on ground, not treetops.
-            int[] samples = {-100, -50, 0, 50, 100};
+            int[] samples = {-100, 0, 100};
             for (int dx : samples) {
                 for (int dz : samples) {
                     BlockPos ground = world.getHeight(new BlockPos(p.getX() + dx, 0, p.getZ() + dz)).down();
