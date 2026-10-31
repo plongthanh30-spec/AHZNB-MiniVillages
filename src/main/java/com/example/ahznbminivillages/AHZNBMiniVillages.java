@@ -494,7 +494,25 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(1,1,2), Blocks.FLOWER_POT.getDefaultState(), 2);
         }
 
+        private void spawnFukasakuInCentralResidence(World world, BlockPos center) {
+            // Find Fukasaku from the installed AHZNB/Dan's D Sage Training entity registry.
+            for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
+                Class<? extends Entity> entityClass = entry.getEntityClass();
+                if (entityClass == null || !entityClass.getName().contains("EntityToadFukasaku")) continue;
+
+                // Spawn on the ground floor, inside the central residence.
+                Entity fukasaku = entry.newInstance(world);
+                if (fukasaku != null) {
+                    fukasaku.setPosition(center.getX() + 2.5, center.getY(), center.getZ() + 2.5);
+                    fukasaku.enablePersistence();
+                    world.spawnEntity(fukasaku);
+                }
+                return;
+            }
+        }
+
         private void buildCentralResidence(World world, BlockPos p, IBlockState wall, IBlockState roof, IBlockState accent, Random random) {
+            spawnFukasakuInCentralResidence(world, p);
             for (int dx=-8; dx<=8; dx++) for (int dz=-8; dz<=8; dz++) {
                 world.setBlockState(p.add(dx,-1,dz), accent, 2);
                 world.setBlockState(p.add(dx,0,dz), Blocks.PLANKS.getDefaultState(), 2);
