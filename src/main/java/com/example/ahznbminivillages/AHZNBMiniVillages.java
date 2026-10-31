@@ -509,7 +509,6 @@ public class AHZNBMiniVillages {
                 double homeY = center.getY() + 1.0;
                 double homeZ = center.getZ() + 2.5;
                 fukasaku.setPosition(homeX, homeY, homeZ);
-                fukasaku.enablePersistence();
 
                 NBTTagCompound data = fukasaku.getEntityData();
                 data.setBoolean("ToadSageShrineNPC", true);
