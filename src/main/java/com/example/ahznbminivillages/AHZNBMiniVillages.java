@@ -243,8 +243,8 @@ public class AHZNBMiniVillages {
 
         private void clearSurfaceArea(World world, BlockPos center) {
             // Clear trees, leaves, buildings and other obstructions above natural ground
-            // in a 166-block radius. The terrain block itself is preserved.
-            final int radius = 166;
+            // in a 260-block radius. The terrain block itself is preserved.
+            final int radius = 260;
             final int radiusSq = radius * radius;
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
