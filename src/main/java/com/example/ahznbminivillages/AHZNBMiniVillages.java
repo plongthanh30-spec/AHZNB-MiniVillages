@@ -128,16 +128,24 @@ public class AHZNBMiniVillages {
         }
 
         private boolean isMostlyClear(World world, BlockPos p) {
-            // Relaxed terrain filter: accept most natural surfaces and do not reject trees/grass above ground.
-            // This changes terrain eligibility, not the per-chunk village attempt probability.
-            for (int dx = -24; dx <= 24; dx += 24) {
-                for (int dz = -24; dz <= 24; dz += 24) {
-                    Block b = world.getBlockState(p.add(dx, -1, dz)).getBlock();
-                    if (b == Blocks.BEDROCK || b == Blocks.WATER || b == Blocks.FLOWING_WATER ||
-                        b == Blocks.LAVA || b == Blocks.FLOWING_LAVA) return false;
+            // Reject tree trunks/canopies at the village center and across a wide sample
+            // of the settlement footprint, so the village is placed on ground, not treetops.
+            int[] samples = {-100, -50, 0, 50, 100};
+            for (int dx : samples) {
+                for (int dz : samples) {
+                    BlockPos ground = world.getHeight(new BlockPos(p.getX() + dx, 0, p.getZ() + dz)).down();
+                    Block block = world.getBlockState(ground).getBlock();
+                    if (block instanceof net.minecraft.block.BlockLeaves ||
+                        block instanceof net.minecraft.block.BlockLog ||
+                        block == Blocks.BEDROCK || block == Blocks.WATER ||
+                        block == Blocks.FLOWING_WATER || block == Blocks.LAVA ||
+                        block == Blocks.FLOWING_LAVA) return false;
                 }
             }
-            return true;
+            // Also check the exact center column (getHeight can otherwise land on leaves).
+            Block centerTop = world.getBlockState(p.down()).getBlock();
+            return !(centerTop instanceof net.minecraft.block.BlockLeaves) &&
+                   !(centerTop instanceof net.minecraft.block.BlockLog);
         }
 
         private void buildVillage(World world, BlockPos p, int type, Random random) {
