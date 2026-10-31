@@ -148,6 +148,41 @@ public class AHZNBMiniVillages {
                    !(centerTop instanceof net.minecraft.block.BlockLog);
         }
 
+        private void clearSurfaceArea(World world, BlockPos center) {
+            // Clear trees, leaves, buildings and other obstructions above natural ground
+            // in a 166-block radius. The terrain block itself is preserved.
+            final int radius = 166;
+            final int radiusSq = radius * radius;
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (dx * dx + dz * dz > radiusSq) continue;
+                    int x = center.getX() + dx;
+                    int z = center.getZ() + dz;
+                    int y = world.getHeight(new BlockPos(x, 0, z)).getY() - 1;
+                    y = Math.min(y, 254);
+                    while (y > 1) {
+                        Block block = world.getBlockState(new BlockPos(x, y, z)).getBlock();
+                        if (block == Blocks.GRASS || block == Blocks.DIRT ||
+                            block == Blocks.STONE || block == Blocks.SAND ||
+                            block == Blocks.SANDSTONE || block == Blocks.GRAVEL ||
+                            block == Blocks.CLAY || block == Blocks.MYCELIUM ||
+                            block == Blocks.HARDENED_CLAY || block == Blocks.STAINED_HARDENED_CLAY ||
+                            block == Blocks.SNOW || block == Blocks.SNOW_LAYER) {
+                            break;
+                        }
+                        y--;
+                    }
+                    // Remove everything above the detected natural surface, not the terrain.
+                    for (int clearY = y + 1; clearY <= 254; clearY++) {
+                        BlockPos pos = new BlockPos(x, clearY, z);
+                        if (!world.isAirBlock(pos)) {
+                            world.setBlockToAir(pos);
+                        }
+                    }
+                }
+            }
+        }
+
         private void buildVillage(World world, BlockPos p, int type, Random random) {
             IBlockState wall;
             IBlockState roof;
