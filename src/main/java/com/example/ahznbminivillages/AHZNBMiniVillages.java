@@ -61,7 +61,7 @@ public class AHZNBMiniVillages {
                 "EEE", "EDE", "EEE", 'E', Items.EMERALD, 'D', Items.DIAMOND);
     }
 
-    static int spacingBlocks = 670;
+    static int spacingBlocks = 900;
     static String[] ahznbLoot = new String[] {
         "narutomod:anbu_sword",
         "narutomod:chakra_blades",
@@ -125,8 +125,8 @@ public class AHZNBMiniVillages {
         Configuration cfg = new Configuration(new File(event.getModConfigurationDirectory(), MODID + ".cfg"));
         try {
             cfg.load();
-            spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 670, 670, 900,
-                    "Approximate target center-to-center spacing in blocks. Default 670; tune between 670 and 900.");
+            spacingBlocks = cfg.getInt("spacingBlocks", "worldgen", 900, 900, 900,
+                    "Minimum center-to-center spacing between generated villages: 900 blocks.");
             ahznbLoot = cfg.getStringList("ahznbLoot", "loot", ahznbLoot,
                     "Exact AHZNB item registry IDs. Remove entries here to disable them from village chest loot.");
         } finally {
