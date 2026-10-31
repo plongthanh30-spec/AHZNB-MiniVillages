@@ -199,7 +199,7 @@ public class AHZNBMiniVillages {
             if (world.isRemote || world.provider.getDimension() != 0) return;
 
             // 2.5x the previous attempt rate (256 -> 640).
-            double chancePerChunk = Math.min(1.0, 3600.0 / (spacingBlocks * (double) spacingBlocks));
+            double chancePerChunk = Math.min(1.0, 1200.0 / (spacingBlocks * (double) spacingBlocks));
             if (random.nextDouble() >= chancePerChunk) return;
 
             int x = chunkX * 16 + 3 + random.nextInt(10);
