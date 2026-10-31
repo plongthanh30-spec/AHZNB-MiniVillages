@@ -179,7 +179,9 @@ public class AHZNBMiniVillages {
                 {29,29}, {6,37}, {-19,32}, {-37,12}, {-35,-13}, {0,42},
                 // Ten additional homes around the outer residential ring
                 {-65,-45}, {-42,-68}, {-5,-72}, {38,-66}, {68,-42},
-                {72,8}, {55,58}, {12,73}, {-38,66}, {-72,28}
+                {72,8}, {55,58}, {12,73}, {-38,66}, {-72,28},
+                // Five additional homes, positioned within the single perimeter wall
+                {-85,-10}, {-55,-82}, {30,-88}, {88,35}, {-5,90}
             };
             for (int i=0; i<homes.length; i++) {
                 BlockPos house = p.add(homes[i][0], 0, homes[i][1]);
@@ -543,8 +545,8 @@ public class AHZNBMiniVillages {
         }
 
         private void spawnVillageResidents(World world, BlockPos center, Random random) {
-            // Populate the settlement with ordinary villagers.
-            for (int i=0; i<12; i++) {
+            // Populate each settlement with seventeen ordinary villagers.
+            for (int i=0; i<17; i++) {
                 EntityVillager villager = new EntityVillager(world);
                 BlockPos at = center.add(random.nextInt(25)-12, 0, random.nextInt(25)-12);
                 at = world.getTopSolidOrLiquidBlock(at);
@@ -552,7 +554,7 @@ public class AHZNBMiniVillages {
                 world.spawnEntity(villager);
             }
 
-            // Spawn twenty AHZNB ninja/shinobi, cycling available matching entity types.
+            // Spawn thirty AHZNB ninja/shinobi, cycling available matching entity types.
             java.util.List<EntityEntry> ninjaTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
@@ -562,7 +564,7 @@ public class AHZNBMiniVillages {
                 ninjaTypes.add(entry);
             }
             if (!ninjaTypes.isEmpty()) {
-                for (int i=0; i<20; i++) {
+                for (int i=0; i<30; i++) {
                     Entity ninja = ninjaTypes.get(i % ninjaTypes.size()).newInstance(world);
                     if (ninja == null) continue;
                     BlockPos at = world.getTopSolidOrLiquidBlock(center.add(random.nextInt(25)-12, 0, random.nextInt(25)-12));
