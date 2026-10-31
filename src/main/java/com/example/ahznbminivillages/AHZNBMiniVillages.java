@@ -423,8 +423,8 @@ public class AHZNBMiniVillages {
         }
 
         private void spawnBijuu(World world, BlockPos center, Random random) {
-            // 67% chance per generated village. Spawn outside the wall; never spawn the Ten Tails.
-            if (random.nextInt(100) >= 67) return;
+            // 100% chance per generated village: always attempt one tailed-beast spawn.
+            // Spawn outside the wall; never spawn the Ten Tails.
             java.util.List<EntityEntry> bijuuTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
