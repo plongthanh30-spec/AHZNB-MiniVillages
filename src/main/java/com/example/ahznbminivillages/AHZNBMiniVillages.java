@@ -495,18 +495,30 @@ public class AHZNBMiniVillages {
         }
 
         private void spawnFukasakuInCentralResidence(World world, BlockPos center) {
-            // Find Fukasaku from the installed AHZNB/Dan's D Sage Training entity registry.
+            // Dan's D Sage Training identifies shrine NPCs by their exact AHZNB inner class
+            // and the ToadSageShrineNPC/home NBT tags.
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 Class<? extends Entity> entityClass = entry.getEntityClass();
-                if (entityClass == null || !entityClass.getName().contains("EntityToadFukasaku")) continue;
+                if (entityClass == null ||
+                    !entityClass.getName().contains("EntityToadFukasaku$EntityCustom")) continue;
 
-                // Spawn on the ground floor, inside the central residence.
                 Entity fukasaku = entry.newInstance(world);
-                if (fukasaku != null) {
-                    fukasaku.setPosition(center.getX() + 2.5, center.getY(), center.getZ() + 2.5);
-                    fukasaku.enablePersistence();
-                    world.spawnEntity(fukasaku);
-                }
+                if (fukasaku == null) return;
+
+                double homeX = center.getX() + 2.5;
+                double homeY = center.getY() + 1.0;
+                double homeZ = center.getZ() + 2.5;
+                fukasaku.setPosition(homeX, homeY, homeZ);
+                fukasaku.enablePersistence();
+
+                NBTTagCompound data = fukasaku.getEntityData();
+                data.setBoolean("ToadSageShrineNPC", true);
+                data.setDouble("ToadSageHomeX", homeX);
+                data.setDouble("ToadSageHomeY", homeY);
+                data.setDouble("ToadSageHomeZ", homeZ);
+                data.setDouble("ToadSageHomeRadius", 2.25D);
+
+                world.spawnEntity(fukasaku);
                 return;
             }
         }
