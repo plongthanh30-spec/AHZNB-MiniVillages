@@ -120,6 +120,8 @@ public class AHZNBMiniVillages {
             // Supports default Superflat (surface is usually around Y=4) as well as normal terrain.
             if (y < 4 || y > 250) return;
             if (!isMostlyClear(world, new BlockPos(x, y, z))) return;
+            // Keep generated settlements well away from existing vanilla villages.
+            if (world.getVillageCollection().getNearestVillage(new BlockPos(x, y, z), 160) != null) return;
 
             int villageType = Math.floorMod((chunkX * 73428767) ^ (chunkZ * 912931), 5);
             buildVillage(world, new BlockPos(x, y, z), villageType, random);
@@ -201,7 +203,7 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(dx,-1,dz), (edge ? Blocks.STONEBRICK.getDefaultState() : Blocks.STONE.getDefaultState()), 2);
             }
             buildVillageWalls(world, p, wall, accent);
-            buildVillageGate(world, p.add(0,0,-129), accent, roof);
+            buildVillageGate(world, p.add(0,0,-110), accent, roof);
             buildVillageGarden(world, p, random);
             spawnBijuu(world, p, random);
             spawnVillageResidents(world, p, random);
@@ -387,19 +389,40 @@ public class AHZNBMiniVillages {
         }
 
         private void buildVillageWalls(World world, BlockPos p, IBlockState wall, IBlockState accent) {
-            int radius=110;
-            for (int angle=0; angle<360; angle++) {
-                double rad=Math.toRadians(angle);
-                int x=(int)Math.round(Math.cos(rad)*radius), z=(int)Math.round(Math.sin(rad)*radius);
-                if (z<0 && Math.abs(x)<=6) continue;
-                for (int y=0; y<=5; y++) world.setBlockState(p.add(x,y,z), y==5 ? accent : wall, 2);
-                if (angle%8==0) world.setBlockState(p.add(x,6,z), accent, 2);
+            // Rasterize the entire circular perimeter densely so adjacent wall blocks touch.
+            // Leave only the centered northern gate opening; the gate towers close its edges.
+            int radius = 110;
+            int previousX = 0, previousZ = -radius;
+            for (int step = 1; step <= 3600; step++) {
+                double angle = Math.toRadians(step / 10.0);
+                int x = (int)Math.round(Math.cos(angle) * radius);
+                int z = (int)Math.round(Math.sin(angle) * radius);
+                drawWallSegment(world, p, previousX, previousZ, x, z, wall, accent);
+                previousX = x;
+                previousZ = z;
+            }
+            // Re-open a clean 11-block gate passage after rasterizing the ring.
+            for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++)
+                world.setBlockToAir(p.add(x, y, -110));
+        }
+
+        private void drawWallSegment(World world, BlockPos p, int x1, int z1, int x2, int z2,
+                                     IBlockState wall, IBlockState accent) {
+            int steps = Math.max(Math.abs(x2 - x1), Math.abs(z2 - z1));
+            for (int i = 0; i <= steps; i++) {
+                double t = steps == 0 ? 0.0 : i / (double)steps;
+                int x = (int)Math.round(x1 + (x2 - x1) * t);
+                int z = (int)Math.round(z1 + (z2 - z1) * t);
+                for (int y = 0; y <= 5; y++)
+                    world.setBlockState(p.add(x, y, z), y == 5 ? accent : wall, 2);
+                if ((x + z) % 7 == 0)
+                    world.setBlockState(p.add(x, 6, z), accent, 2);
             }
         }
 
         private void spawnBijuu(World world, BlockPos center, Random random) {
-            // 50% chance per generated village. Spawn outside the wall; never spawn the Ten Tails.
-            if (random.nextInt(100) >= 50) return;
+            // 67% chance per generated village. Spawn outside the wall; never spawn the Ten Tails.
+            if (random.nextInt(100) >= 67) return;
             java.util.List<EntityEntry> bijuuTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
@@ -416,9 +439,9 @@ public class AHZNBMiniVillages {
             if (bijuuTypes.isEmpty()) return;
             Entity bijuu = bijuuTypes.get(random.nextInt(bijuuTypes.size())).newInstance(world);
             if (bijuu == null) return;
-            // Wall radius is 110 blocks; place the beast at radius 120 (10 blocks beyond the wall).
+            // Wall radius is 110 blocks; place the beast at radius 145 (35 blocks beyond the wall).
             double angle = random.nextDouble() * Math.PI * 2.0;
-            int distance = 120;
+            int distance = 145;
             BlockPos target = center.add((int)Math.round(Math.cos(angle) * distance), 0,
                                          (int)Math.round(Math.sin(angle) * distance));
             BlockPos spawn = world.getTopSolidOrLiquidBlock(target);
@@ -475,39 +498,27 @@ public class AHZNBMiniVillages {
         }
 
         private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
-            // Monumental gate: twin towers, layered roof, lit arch and connected defensive walls.
-            for (int side : new int[]{-1,1}) {
-                int x=side*7;
-                for (int y=0; y<=12; y++) {
-                    world.setBlockState(p.add(x,y,0), accent, 2);
-                    world.setBlockState(p.add(x+side*2,y,0), accent, 2);
+            // Gate is centered directly on the northern wall line (z = -110).
+            for (int side : new int[]{-1, 1}) {
+                int x = side * 6;
+                for (int y = 0; y <= 10; y++) {
+                    world.setBlockState(p.add(x, y, 0), accent, 2);
+                    world.setBlockState(p.add(x + side, y, 0), accent, 2);
                 }
-                for (int dx=-2; dx<=2; dx++) for (int dz=-2; dz<=2; dz++)
-                    world.setBlockState(p.add(x+dx,13, dz), roof, 2);
-                world.setBlockState(p.add(x,14,0), Blocks.GLOWSTONE.getDefaultState(), 2);
-                world.setBlockState(p.add(x,10,-2), Blocks.GLOWSTONE.getDefaultState(), 2);
+                for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++)
+                    world.setBlockState(p.add(x + dx, 11, dz), roof, 2);
+                world.setBlockState(p.add(x, 12, 0), Blocks.GLOWSTONE.getDefaultState(), 2);
             }
-            for (int x=-5; x<=5; x++) {
-                world.setBlockState(p.add(x,8,0), accent, 2);
-                world.setBlockState(p.add(x,9,0), roof, 2);
-                world.setBlockState(p.add(x,10,0), roof, 2);
+            // Raised lintel bridges the two gate towers; the central passage remains open.
+            for (int x = -5; x <= 5; x++) {
+                world.setBlockState(p.add(x, 8, 0), accent, 2);
+                world.setBlockState(p.add(x, 9, 0), roof, 2);
             }
-            for (int y=0; y<=7; y++) {
-                world.setBlockToAir(p.add(-5,y,0));
-                world.setBlockToAir(p.add(5,y,0));
-                world.setBlockToAir(p.add(0,y,0));
-            }
-            for (int x=-4; x<=4; x++) {
-                world.setBlockState(p.add(x,-1,0), Blocks.STONEBRICK.getDefaultState(), 2);
-                world.setBlockState(p.add(x,0,0), Blocks.STONEBRICK.getDefaultState(), 2);
-            }
-            // Continue both side walls from the gate at z=-129 to the circular wall at z=-110.
-            for (int z=-129; z<=-109; z++) for (int y=0; y<=5; y++) {
-                world.setBlockState(p.add(-7,y,z+129), y==5 ? accent : accent, 2);
-                world.setBlockState(p.add(7,y,z+129), y==5 ? accent : accent, 2);
-            }
-            for (int z=-128; z<=-111; z++) for (int x=-7; x<=7; x++)
-                world.setBlockState(p.add(x,-1,z+129), Blocks.STONEBRICK.getDefaultState(), 2);
+            for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++)
+                world.setBlockToAir(p.add(x, y, 0));
+            // Paved road passes straight through the gate into the village.
+            for (int z = -12; z <= 12; z++) for (int x = -4; x <= 4; x++)
+                world.setBlockState(p.add(x, -1, z), Blocks.STONEBRICK.getDefaultState(), 2);
         }
 
         private void buildVillageGarden(World world, BlockPos p, Random random) {
