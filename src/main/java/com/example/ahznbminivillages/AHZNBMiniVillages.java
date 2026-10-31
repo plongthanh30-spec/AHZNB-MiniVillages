@@ -544,7 +544,7 @@ public class AHZNBMiniVillages {
 
         private void spawnVillageResidents(World world, BlockPos center, Random random) {
             // Populate the settlement with ordinary villagers.
-            for (int i=0; i<8; i++) {
+            for (int i=0; i<12; i++) {
                 EntityVillager villager = new EntityVillager(world);
                 BlockPos at = center.add(random.nextInt(25)-12, 0, random.nextInt(25)-12);
                 at = world.getTopSolidOrLiquidBlock(at);
@@ -552,7 +552,7 @@ public class AHZNBMiniVillages {
                 world.spawnEntity(villager);
             }
 
-            // Spawn twelve AHZNB ninja/shinobi, cycling available matching entity types.
+            // Spawn twenty AHZNB ninja/shinobi, cycling available matching entity types.
             java.util.List<EntityEntry> ninjaTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
@@ -562,7 +562,7 @@ public class AHZNBMiniVillages {
                 ninjaTypes.add(entry);
             }
             if (!ninjaTypes.isEmpty()) {
-                for (int i=0; i<12; i++) {
+                for (int i=0; i<20; i++) {
                     Entity ninja = ninjaTypes.get(i % ninjaTypes.size()).newInstance(world);
                     if (ninja == null) continue;
                     BlockPos at = world.getTopSolidOrLiquidBlock(center.add(random.nextInt(25)-12, 0, random.nextInt(25)-12));
