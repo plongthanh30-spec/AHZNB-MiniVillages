@@ -337,8 +337,15 @@ public class AHZNBMiniVillages {
                 boolean edge=Math.abs(dx)==7 || Math.abs(dz)==7;
                 world.setBlockState(p.add(dx,-1,dz), (edge ? Blocks.STONEBRICK.getDefaultState() : Blocks.STONE.getDefaultState()), 2);
             }
+            // A more legible village center: stone plaza, radial lanes and decorative lamps.
+            buildVillagePlaza(world, p, wall, accent);
             buildVillageWalls(world, p, wall, accent);
             buildVillageGate(world, p.add(0,0,-105), accent, roof);
+            // Four watchtowers reinforce the settlement's defensive silhouette.
+            buildWatchtower(world, p.add(-78,0,-78), wall, roof, accent);
+            buildWatchtower(world, p.add(78,0,-78), wall, roof, accent);
+            buildWatchtower(world, p.add(-78,0,78), wall, roof, accent);
+            buildWatchtower(world, p.add(78,0,78), wall, roof, accent);
             buildVillageGarden(world, p, random);
             spawnBijuu(world, p, random);
             spawnVillageResidents(world, p, random);
@@ -744,6 +751,72 @@ public class AHZNBMiniVillages {
             // Paved road passes straight through the gate into the village.
             for (int z = -12; z <= 12; z++) for (int x = -4; x <= 4; x++)
                 world.setBlockState(p.add(x, -1, z), Blocks.STONEBRICK.getDefaultState(), 2);
+        }
+
+        private void buildVillagePlaza(World world, BlockPos p, IBlockState wall, IBlockState accent) {
+            // A patterned 25x25 central square with a raised monument in the middle.
+            for (int x=-12; x<=12; x++) for (int z=-12; z<=12; z++) {
+                boolean border = Math.abs(x)==12 || Math.abs(z)==12;
+                boolean motif = (Math.abs(x)==6 && Math.abs(z)<=6) ||
+                                (Math.abs(z)==6 && Math.abs(x)<=6);
+                IBlockState floor = border || motif ? accent :
+                    ((Math.abs(x)+Math.abs(z))%2==0 ? Blocks.STONEBRICK.getDefaultState() :
+                                                        Blocks.STONE.getDefaultState());
+                world.setBlockState(p.add(x,-1,z), floor, 2);
+            }
+            // Four low corner planters and a central monument.
+            for (int sx : new int[]{-9,9}) for (int sz : new int[]{-9,9}) {
+                for (int dx=-1; dx<=1; dx++) for (int dz=-1; dz<=1; dz++)
+                    world.setBlockState(p.add(sx+dx,0,sz+dz), accent, 2);
+                world.setBlockState(p.add(sx,1,sz), Blocks.LEAVES.getDefaultState(), 2);
+                world.setBlockState(p.add(sx,2,sz), Blocks.LEAVES.getDefaultState(), 2);
+                world.setBlockState(p.add(sx+1,1,sz), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
+            }
+            for (int y=0; y<=3; y++) {
+                world.setBlockState(p.add(0,y,0), y==3 ? Blocks.GLOWSTONE.getDefaultState() : accent, 2);
+                world.setBlockState(p.add(1,y,0), accent, 2);
+                world.setBlockState(p.add(-1,y,0), accent, 2);
+                world.setBlockState(p.add(0,y,1), accent, 2);
+                world.setBlockState(p.add(0,y,-1), accent, 2);
+            }
+            // Symmetric lantern posts around the square.
+            for (int x : new int[]{-11,11}) for (int z : new int[]{-11,11})
+                buildStreetLamp(world, p.add(x,0,z), accent);
+        }
+
+        private void buildStreetLamp(World world, BlockPos p, IBlockState accent) {
+            for (int y=0; y<=4; y++)
+                world.setBlockState(p.add(0,y,0), y==0 ? accent : Blocks.OAK_FENCE.getDefaultState(), 2);
+            world.setBlockState(p.add(0,5,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            for (int dx=-1; dx<=1; dx++) for (int dz=-1; dz<=1; dz++)
+                if (Math.abs(dx)+Math.abs(dz)==1)
+                    world.setBlockState(p.add(dx,4,dz), accent, 2);
+        }
+
+        private void buildWatchtower(World world, BlockPos p, IBlockState wall, IBlockState roof, IBlockState accent) {
+            // Four-level open defensive tower with viewing slits and a broad roof.
+            for (int y=0; y<=10; y++) {
+                for (int x=-3; x<=3; x++) for (int z=-3; z<=3; z++) {
+                    boolean corner = Math.abs(x)==3 && Math.abs(z)==3;
+                    boolean edge = Math.abs(x)==3 || Math.abs(z)==3;
+                    if (y<=7 && edge && (corner || y==0 || y==7 || (y>=3 && y<=5)))
+                        world.setBlockState(p.add(x,y,z), (corner || y==0 || y==7) ? accent : wall, 2);
+                }
+            }
+            // Reinforced upper gallery and pagoda-like stepped roof.
+            for (int x=-4; x<=4; x++) for (int z=-4; z<=4; z++) {
+                if (Math.abs(x)==4 || Math.abs(z)==4)
+                    world.setBlockState(p.add(x,8,z), accent, 2);
+                world.setBlockState(p.add(x,9,z), roof, 2);
+            }
+            for (int x=-3; x<=3; x++) for (int z=-3; z<=3; z++)
+                world.setBlockState(p.add(x,10,z), roof, 2);
+            for (int x=-2; x<=2; x++) for (int z=-2; z<=2; z++)
+                world.setBlockState(p.add(x,11,z), roof, 2);
+            world.setBlockState(p.add(0,12,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            // Lit corners make towers visible at night.
+            for (int x : new int[]{-2,2}) for (int z : new int[]{-2,2})
+                world.setBlockState(p.add(x,6,z), Blocks.TORCH.getDefaultState(), 2);
         }
 
         private void buildVillageGarden(World world, BlockPos p, Random random) {
