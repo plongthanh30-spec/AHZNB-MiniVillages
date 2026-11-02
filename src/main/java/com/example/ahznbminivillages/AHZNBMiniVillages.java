@@ -347,182 +347,128 @@ public class AHZNBMiniVillages {
 
         private void buildNinjaHouse(World world, BlockPos p, IBlockState wall, IBlockState roof,
                                      IBlockState accent, Random random, int style) {
-            // Large two-storey player-style home with a broad tiered roof.
-            IBlockState glass = Blocks.GLASS_PANE.getDefaultState();
+            // New design: compact Japanese shinobi townhouse with a raised second floor,
+            // deep curved-looking eaves, timber framing, paper windows and a courtyard porch.
+            IBlockState floor = Blocks.PLANKS.getStateFromMeta(style==1 ? 2 : 0);
+            IBlockState glass = Blocks.STAINED_GLASS_PANE.getStateFromMeta(style==0 ? 0 : (style==1 ? 4 : 15));
+            IBlockState slab = Blocks.WOODEN_SLAB.getStateFromMeta(style==1 ? 2 : 0);
             IBlockState fence = Blocks.OAK_FENCE.getDefaultState();
-            IBlockState plank = Blocks.PLANKS.getStateFromMeta(0);
-            IBlockState slab = Blocks.WOODEN_SLAB.getDefaultState();
 
-            // Wide foundation and lower floor (11 x 11).
-            for (int dx=-5; dx<=5; dx++) for (int dz=-5; dz<=5; dz++) {
-                world.setBlockState(p.add(dx,-1,dz), accent, 2);
-                world.setBlockState(p.add(dx,0,dz), plank, 2);
+            // Stone foundation and warm wooden floor.
+            for (int x=-5;x<=5;x++) for (int z=-5;z<=5;z++) {
+                world.setBlockState(p.add(x,-1,z), accent, 2);
+                world.setBlockState(p.add(x,0,z), floor, 2);
             }
 
-            // First floor walls, tall windows and a wide front entrance.
-            for (int y=1; y<=4; y++) for (int i=-5; i<=5; i++) {
+            // Ground floor: solid wall shell with a centered entrance.
+            for (int y=1;y<=4;y++) for (int i=-5;i<=5;i++) {
                 world.setBlockState(p.add(i,y,-5), wall, 2);
                 world.setBlockState(p.add(i,y,5), wall, 2);
                 world.setBlockState(p.add(-5,y,i), wall, 2);
                 world.setBlockState(p.add(5,y,i), wall, 2);
             }
-            for (int y=1; y<=2; y++) {
-                world.setBlockToAir(p.add(-1,y,-5));
+            for (int y=1;y<=2;y++) {
                 world.setBlockToAir(p.add(0,y,-5));
+                world.setBlockToAir(p.add(0,y,5));
             }
-            // Two double-width entrances on opposite facades, facing each other.
-            for (int zFace : new int[]{-5,5}) {
-                for (int y=1; y<=2; y++) {
-                    world.setBlockToAir(p.add(-1,y,zFace));
-                    world.setBlockToAir(p.add(0,y,zFace));
-                }
-                world.setBlockState(p.add(-1,1,zFace), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
-                world.setBlockState(p.add(-1,2,zFace), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
-                world.setBlockState(p.add(0,1,zFace), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
-                world.setBlockState(p.add(0,2,zFace), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
+            world.setBlockState(p.add(0,1,-5), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(0,2,-5), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
+            world.setBlockState(p.add(0,1,5), Blocks.OAK_DOOR.getStateFromMeta(0), 2);
+            world.setBlockState(p.add(0,2,5), Blocks.OAK_DOOR.getStateFromMeta(8), 2);
+
+            // Broad shoji-style windows and dark timber mullions.
+            for (int y=2;y<=3;y++) for (int x : new int[]{-3,-2,2,3}) {
+                world.setBlockState(p.add(x,y,-5), glass, 2);
+                world.setBlockState(p.add(x,y,5), glass, 2);
+                world.setBlockState(p.add(-5,y,x), glass, 2);
+                world.setBlockState(p.add(5,y,x), glass, 2);
             }
-            // Entrance canopy and decorative side pillars.
-            for (int dx=-2; dx<=1; dx++) {
-                world.setBlockState(p.add(dx,0,-6), accent, 2);
-                world.setBlockState(p.add(dx,3,-6), roof, 2);
-            }
-            for (int y=1; y<=3; y++) {
-                world.setBlockState(p.add(-2,y,-5), accent, 2);
-                world.setBlockState(p.add(1,y,-5), accent, 2);
-            }
-            // Large windows on each facade.
-            for (int y=2; y<=3; y++) for (int dx : new int[]{-3,-2,2,3}) {
-                world.setBlockState(p.add(dx,y,-5), glass, 2);
-                world.setBlockState(p.add(dx,y,5), glass, 2);
-                world.setBlockState(p.add(-5,y,dx), glass, 2);
-                world.setBlockState(p.add(5,y,dx), glass, 2);
+            for (int x : new int[]{-5,5}) for (int z : new int[]{-5,5})
+                for (int y=1;y<=8;y++) world.setBlockState(p.add(x,y,z), accent, 2);
+            for (int x=-5;x<=5;x++) {
+                world.setBlockState(p.add(x,4,-5), accent, 2);
+                world.setBlockState(p.add(x,4,5), accent, 2);
             }
 
-            // Heavy timber corner frames and floor band.
-            for (int dx : new int[]{-5,5}) for (int dz : new int[]{-5,5})
-                for (int y=1; y<=7; y++) world.setBlockState(p.add(dx,y,dz), accent, 2);
-            for (int dx=-5; dx<=5; dx++) for (int dz=-5; dz<=5; dz++) {
-                if (Math.abs(dx)==5 || Math.abs(dz)==5)
-                    world.setBlockState(p.add(dx,4,dz), accent, 2);
-            }
-
-            // Upper storey set slightly inward, with balcony.
-            for (int dx=-4; dx<=4; dx++) for (int dz=-4; dz<=4; dz++) {
-                if (Math.abs(dx)==4 || Math.abs(dz)==4) {
-                    world.setBlockState(p.add(dx,5,dz), wall, 2);
-                    world.setBlockState(p.add(dx,6,dz), wall, 2);
+            // Wraparound veranda.
+            for (int x=-6;x<=6;x++) {
+                world.setBlockState(p.add(x,1,-6), slab, 2);
+                world.setBlockState(p.add(x,1,6), slab, 2);
+                if (x%2==0) {
+                    world.setBlockState(p.add(x,2,-6), fence, 2);
+                    world.setBlockState(p.add(x,2,6), fence, 2);
                 }
             }
-            for (int y=5; y<=6; y++) {
+            for (int z=-5;z<=5;z++) {
+                world.setBlockState(p.add(-6,1,z), slab, 2);
+                world.setBlockState(p.add(6,1,z), slab, 2);
+            }
+            for (int x : new int[]{-5,5}) for (int z : new int[]{-5,5})
+                for (int y=1;y<=3;y++) world.setBlockState(p.add(x,y,-6), accent, 2);
+
+            // Second storey is narrower, giving the house a distinct stepped silhouette.
+            for (int x=-4;x<=4;x++) for (int z=-4;z<=4;z++) {
+                if (Math.abs(x)==4 || Math.abs(z)==4) {
+                    for (int y=5;y<=7;y++) world.setBlockState(p.add(x,y,z), wall, 2);
+                }
+            }
+            for (int y=5;y<=6;y++) {
                 world.setBlockToAir(p.add(0,y,-4));
-                world.setBlockState(p.add(-2,y,-4), glass, 2);
-                world.setBlockState(p.add(2,y,-4), glass, 2);
+                for (int x : new int[]{-2,-1,1,2}) {
+                    world.setBlockState(p.add(x,y,-4), glass, 2);
+                    world.setBlockState(p.add(x,y,4), glass, 2);
+                }
                 world.setBlockState(p.add(-4,y,0), glass, 2);
                 world.setBlockState(p.add(4,y,0), glass, 2);
             }
-            for (int dx=-5; dx<=5; dx++) {
-                world.setBlockState(p.add(dx,5,-6), slab, 2);
-                world.setBlockState(p.add(dx,5,6), slab, 2);
-            }
-            for (int dz=-6; dz<=6; dz++) {
-                world.setBlockState(p.add(-6,5,dz), slab, 2);
-                world.setBlockState(p.add(6,5,dz), slab, 2);
-            }
-            for (int dx=-6; dx<=6; dx+=2) {
-                world.setBlockState(p.add(dx,6,-6), fence, 2);
-                world.setBlockState(p.add(dx,6,6), fence, 2);
-            }
-            for (int dz=-6; dz<=6; dz+=2) {
-                world.setBlockState(p.add(-6,6,dz), fence, 2);
-                world.setBlockState(p.add(6,6,dz), fence, 2);
-            }
+            for (int x : new int[]{-4,4}) for (int z : new int[]{-4,4})
+                for (int y=5;y<=8;y++) world.setBlockState(p.add(x,y,z), accent, 2);
 
-            // Multi-level Japanese-inspired roof with wide eaves.
-            for (int layer=0; layer<3; layer++) {
-                int radius=(style==1 ? 6-layer : (style==2 ? 6-layer*2 : (style==3 ? 8-layer*2 : 7-layer*2)));
-                int y=7+layer;
-                for (int dx=-radius; dx<=radius; dx++) for (int dz=-radius; dz<=radius; dz++) {
-                    // Filled roof tiers look like a real Japanese tiled roof, not a hollow outline.
-                    if (Math.abs(dx)<=radius && Math.abs(dz)<=radius)
-                        world.setBlockState(p.add(dx,y,dz), roof, 2);
-                }
-                for (int i=-radius; i<=radius; i+=2) {
-                    world.setBlockState(p.add(i,y+1,-radius), accent, 2);
-                    world.setBlockState(p.add(i,y+1,radius), accent, 2);
+            // Dramatic pagoda roof: three broad overhangs stepping inward to a ridge.
+            for (int tier=0;tier<3;tier++) {
+                int radius=8-tier*2;
+                int y=8+tier*2;
+                for (int x=-radius;x<=radius;x++) for (int z=-radius;z<=radius;z++)
+                    if (Math.abs(x)==radius || Math.abs(z)==radius ||
+                        (tier==0 && (Math.abs(x)==radius-1 || Math.abs(z)==radius-1)))
+                        world.setBlockState(p.add(x,y,z), tier==0 ? accent : roof, 2);
+                for (int x=-radius;x<=radius;x++) {
+                    world.setBlockState(p.add(x,y+1,-radius), roof, 2);
+                    world.setBlockState(p.add(x,y+1,radius), roof, 2);
                 }
             }
-            for (int dx=-2; dx<=2; dx++) for (int dz=-2; dz<=2; dz++)
-                world.setBlockState(p.add(dx,10,dz), roof, 2);
-            world.setBlockState(p.add(0,11,0), accent, 2);
-            world.setBlockState(p.add(0,12,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            for (int x=-3;x<=3;x++) for (int z=-3;z<=3;z++)
+                world.setBlockState(p.add(x,14,z), roof, 2);
+            world.setBlockState(p.add(0,15,0), accent, 2);
+            world.setBlockState(p.add(0,16,0), Blocks.GLOWSTONE.getDefaultState(), 2);
 
-            // Clear, flat approach outside both opposing entrances.
-            for (int z=-9; z<=-6; z++) for (int dx=-2; dx<=2; dx++)
-                world.setBlockToAir(p.add(dx,1,z));
-            for (int z=6; z<=9; z++) for (int dx=-2; dx<=2; dx++)
-                world.setBlockToAir(p.add(dx,1,z));
-            world.setBlockState(p.add(-3,3,-5), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(3,3,-5), Blocks.TORCH.getDefaultState(), 2);
-            // Two loot chests placed on opposite sides of the ground floor.
-            placeLootChest(world, p.add(-3,1,3), random);
-            placeLootChest(world, p.add(3,1,3), random);
-            world.setBlockState(p.add(0,3,0), Blocks.GLOWSTONE.getDefaultState(), 2);
-            world.setBlockState(p.add(-4,3,0), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(4,3,0), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(0,6,0), Blocks.GLOWSTONE.getDefaultState(), 2);
-            world.setBlockState(p.add(-3,6,0), Blocks.TORCH.getDefaultState(), 2);
-            world.setBlockState(p.add(3,6,0), Blocks.TORCH.getDefaultState(), 2);
-            // Ten dedicated upper-floor lights, evenly distributed around the second-storey interior.
-            int[][] upperLights = {{-3,1},{-1,1},{1,1},{3,1},{-3,-1},{-1,-1},{1,-1},{3,-1},{-2,3},{2,3}};
-            for (int[] light : upperLights) {
-                world.setBlockState(p.add(light[0],6,light[1]), Blocks.GLOWSTONE.getDefaultState(), 2);
-            }
-
-
-            // Two separate beds, plus work area, shelves and carpet.
+            // Interior rooms, lamps, training corner and storage.
             world.setBlockState(p.add(-3,1,2), Blocks.BED.getStateFromMeta(0), 2);
             world.setBlockState(p.add(-3,1,3), Blocks.BED.getStateFromMeta(8), 2);
-            world.setBlockState(p.add(3,1,-3), Blocks.BED.getStateFromMeta(0), 2);
-            world.setBlockState(p.add(3,1,-2), Blocks.BED.getStateFromMeta(8), 2);
-            world.setBlockState(p.add(-3,1,-2), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
-            world.setBlockState(p.add(-2,1,-2), Blocks.FURNACE.getDefaultState(), 2);
-            world.setBlockState(p.add(2,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
-            world.setBlockState(p.add(2,1,-1), Blocks.BOOKSHELF.getDefaultState(), 2);
-            world.setBlockState(p.add(0,1,2), Blocks.CARPET.getDefaultState(), 2);
-            world.setBlockState(p.add(1,1,2), Blocks.FLOWER_POT.getDefaultState(), 2);
-
-            // Detailed shinobi residence interior and second-floor study.
-            world.setBlockState(p.add(0,1,-3), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
-            world.setBlockState(p.add(1,1,-3), Blocks.CHEST.getDefaultState(), 2);
-            for (int x=-3; x<=3; x+=2) {
-                world.setBlockState(p.add(x,3,4), Blocks.BOOKSHELF.getDefaultState(), 2);
-                world.setBlockState(p.add(x,6,3), Blocks.BOOKSHELF.getDefaultState(), 2);
-            }
-            world.setBlockState(p.add(-2,6,-2), Blocks.ENCHANTING_TABLE.getDefaultState(), 2);
-            world.setBlockState(p.add(2,6,-2), Blocks.ANVIL.getDefaultState(), 2);
+            world.setBlockState(p.add(3,1,2), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
+            world.setBlockState(p.add(4,1,2), Blocks.CHEST.getDefaultState(), 2);
+            world.setBlockState(p.add(-3,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
+            world.setBlockState(p.add(-2,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
+            world.setBlockState(p.add(0,3,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            world.setBlockState(p.add(0,6,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            world.setBlockState(p.add(-2,6,1), Blocks.ENCHANTING_TABLE.getDefaultState(), 2);
+            world.setBlockState(p.add(2,6,1), Blocks.ANVIL.getDefaultState(), 2);
             world.setBlockState(p.add(0,6,2), Blocks.CARPET.getDefaultState(), 2);
+            for (int x : new int[]{-3,3}) {
+                world.setBlockState(p.add(x,3,-3), Blocks.TORCH.getDefaultState(), 2);
+                world.setBlockState(p.add(x,6,-2), Blocks.TORCH.getDefaultState(), 2);
+            }
 
-            // Three-tier overhanging eaves, decorative ridge and corner supports.
-            for (int layer=0; layer<3; layer++) {
-                int r=7-layer, y=7+layer;
-                for (int x=-r; x<=r; x++) for (int z=-r; z<=r; z++)
-                    if (Math.abs(x)==r || Math.abs(z)==r)
-                        world.setBlockState(p.add(x,y,z), layer==0 ? accent : roof, 2);
+            // Lantern gateposts, stepping-stone path and symmetrical flower planters.
+            for (int side : new int[]{-1,1}) {
+                for (int y=0;y<=3;y++) world.setBlockState(p.add(side*7,y,-6), fence, 2);
+                world.setBlockState(p.add(side*7,4,-6), Blocks.GLOWSTONE.getDefaultState(), 2);
+                for (int z=-10;z<=-7;z++)
+                    world.setBlockState(p.add(side*2,0,z), Blocks.STONEBRICK.getDefaultState(), 2);
+                world.setBlockState(p.add(side*7,0,-8), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
+                world.setBlockState(p.add(side*7,0,-9), Blocks.RED_FLOWER.getDefaultState(), 2);
             }
-            for (int x=-4; x<=4; x++) {
-                world.setBlockState(p.add(x,9,-2), roof, 2);
-                world.setBlockState(p.add(x,9,2), roof, 2);
-            }
-            for (int side : new int[]{-1,1}) for (int z=-4; z<=4; z+=2) {
-                world.setBlockState(p.add(side*6,3,z), Blocks.TORCH.getDefaultState(), 2);
-                world.setBlockState(p.add(side*6,6,z), fence, 2);
-                world.setBlockState(p.add(side*7,1,-6), Blocks.FENCE.getDefaultState(), 2);
-                world.setBlockState(p.add(side*7,2,-6), Blocks.GLOWSTONE.getDefaultState(), 2);
-                world.setBlockState(p.add(side*7,0,-7), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
-                world.setBlockState(p.add(side*7,0,-8), Blocks.RED_FLOWER.getDefaultState(), 2);
-            }
-            for (int side : new int[]{-1,1}) for (int z=-9; z<=-7; z++)
-                world.setBlockState(p.add(side*3,0,z), Blocks.STONEBRICK.getDefaultState(), 2);
+            placeLootChest(world, p.add(-4,1,3), random);
         }
 
         private void spawnFukasakuInCentralResidence(World world, BlockPos center) {
