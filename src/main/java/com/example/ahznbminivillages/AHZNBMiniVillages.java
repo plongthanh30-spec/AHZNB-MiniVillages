@@ -320,7 +320,6 @@ public class AHZNBMiniVillages {
             for (int i=0; i<homes.length; i++) {
                 BlockPos house = p.add(homes[i][0], 0, homes[i][1]);
                 buildNinjaHouse(world, house, wall, roof, accent, random, type);
-                buildDistinctVillageArchitecture(world, house, wall, roof, accent, type, random);
                 // Small style variations: porch pillars, flower beds and side lamps.
                 if (i%3==0) world.setBlockState(house.add(0,3,-6), accent, 2);
                 if (i%3==1) world.setBlockState(house.add(0,3,6), Blocks.GLOWSTONE.getDefaultState(), 2);
