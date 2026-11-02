@@ -737,8 +737,10 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(x, 8, 0), accent, 2);
                 world.setBlockState(p.add(x, 9, 0), roof, 2);
             }
-            for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++)
+            for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++) {
                 world.setBlockToAir(p.add(x, y, 0));
+                world.setBlockToAir(p.add(x, y, 1));
+            }
             // Paved road passes straight through the gate into the village.
             for (int z = -12; z <= 12; z++) for (int x = -4; x <= 4; x++)
                 world.setBlockState(p.add(x, -1, z), Blocks.STONEBRICK.getDefaultState(), 2);
