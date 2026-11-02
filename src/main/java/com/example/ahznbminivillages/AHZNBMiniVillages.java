@@ -486,6 +486,42 @@ public class AHZNBMiniVillages {
             }
             world.setBlockState(p.add(0,13,0), Blocks.GLOWSTONE.getDefaultState(), 2);
 
+            // Extra traditional detailing: layered fascia, exposed rafters, window
+            // shutters, decorative gable frame and a covered entrance canopy.
+            for (int x=-width-2;x<=width+2;x++) {
+                world.setBlockState(p.add(x,5,depth+2), darkWood, 2);
+                world.setBlockState(p.add(x,5,-depth-2), darkWood, 2);
+            }
+            for (int z=-depth-1;z<=depth+1;z+=2) {
+                world.setBlockState(p.add(-width-2,5,z), darkWood, 2);
+                world.setBlockState(p.add(width+2,5,z), darkWood, 2);
+            }
+            for (int x=-4;x<=4;x++) {
+                world.setBlockState(p.add(x,8,5), darkWood, 2);
+                if (Math.abs(x)<=2) world.setBlockState(p.add(x,9,5), glass, 2);
+            }
+            // Decorative triangular gable on the front elevation.
+            for (int level=0;level<=3;level++) {
+                int span=3-level;
+                for (int x=-span;x<=span;x++)
+                    world.setBlockState(p.add(x,8+level,4), level==3 ? roof : darkWood, 2);
+            }
+            // Entrance canopy with two timber brackets and lanterns.
+            for (int x=-2;x<=2;x++) {
+                world.setBlockState(p.add(x,4,depth+2), roof, 2);
+                world.setBlockState(p.add(x,4,depth+3), roof, 2);
+            }
+            for (int x : new int[]{-2,2}) {
+                world.setBlockState(p.add(x,3,depth+2), darkWood, 2);
+                world.setBlockState(p.add(x,4,depth+2), Blocks.GLOWSTONE.getDefaultState(), 2);
+            }
+            // Low stone edging and flower planters at the front corners.
+            for (int x : new int[]{-width-1,width+1}) {
+                for (int z=depth+2;z<=depth+4;z++)
+                    world.setBlockState(p.add(x,0,z), base, 2);
+                world.setBlockState(p.add(x,1,depth+3), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
+            }
+
             // Interior furnishings and guaranteed Naruto loot chest.
             world.setBlockState(p.add(-3,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
             world.setBlockState(p.add(-2,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
@@ -578,9 +614,11 @@ public class AHZNBMiniVillages {
                 previousX = x;
                 previousZ = z;
             }
-            // Re-open a clean 11-block gate passage after rasterizing the ring.
-            for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++)
+            // Re-open a clean 11-block-wide, two-block-deep gate passage.
+            for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++) {
                 world.setBlockToAir(p.add(x, y, -105));
+                world.setBlockToAir(p.add(x, y, -104));
+            }
         }
 
         private void drawWallSegment(World world, BlockPos p, int x1, int z1, int x2, int z2,
@@ -590,10 +628,18 @@ public class AHZNBMiniVillages {
                 double t = steps == 0 ? 0.0 : i / (double)steps;
                 int x = (int)Math.round(x1 + (x2 - x1) * t);
                 int z = (int)Math.round(z1 + (z2 - z1) * t);
-                for (int y = 0; y <= 5; y++)
-                    world.setBlockState(p.add(x, y, z), y == 5 ? accent : wall, 2);
-                if ((x + z) % 7 == 0)
-                    world.setBlockState(p.add(x, 6, z), accent, 2);
+                // Two-block-thick continuous wall, seven blocks tall (Y=0..6).
+                // The second course is offset inward to form a solid defensive wall.
+                for (int y = 0; y <= 6; y++) {
+                    IBlockState course = (y == 6) ? accent : wall;
+                    world.setBlockState(p.add(x, y, z), course, 2);
+                    world.setBlockState(p.add(x, y, z + (z < 0 ? 1 : -1)), course, 2);
+                }
+                // Stone merlons along the top give the wall a fortified silhouette.
+                if ((x + z) % 5 == 0) {
+                    world.setBlockState(p.add(x, 7, z), accent, 2);
+                    world.setBlockState(p.add(x, 7, z + (z < 0 ? 1 : -1)), accent, 2);
+                }
             }
         }
 
