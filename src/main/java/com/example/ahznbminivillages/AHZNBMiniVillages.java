@@ -316,8 +316,6 @@ public class AHZNBMiniVillages {
                 // Ten additional homes around the outer residential ring
                 {-65,-45}, {-42,-68}, {-5,-72}, {38,-66}, {68,-42},
                 {72,8}, {55,58}, {12,73}, {-38,66}, {-72,28},
-                // Five additional homes, positioned within the single perimeter wall
-                {-85,-10}, {-55,-82}, {30,-88}, {88,35}, {-5,90}
             };
             for (int i=0; i<homes.length; i++) {
                 BlockPos house = p.add(homes[i][0], 0, homes[i][1]);
@@ -341,7 +339,7 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(dx,-1,dz), (edge ? Blocks.STONEBRICK.getDefaultState() : Blocks.STONE.getDefaultState()), 2);
             }
             buildVillageWalls(world, p, wall, accent);
-            buildVillageGate(world, p.add(0,0,-110), accent, roof);
+            buildVillageGate(world, p.add(0,0,-105), accent, roof);
             buildVillageGarden(world, p, random);
             spawnBijuu(world, p, random);
             spawnVillageResidents(world, p, random);
@@ -492,6 +490,39 @@ public class AHZNBMiniVillages {
             world.setBlockState(p.add(2,1,-1), Blocks.BOOKSHELF.getDefaultState(), 2);
             world.setBlockState(p.add(0,1,2), Blocks.CARPET.getDefaultState(), 2);
             world.setBlockState(p.add(1,1,2), Blocks.FLOWER_POT.getDefaultState(), 2);
+
+            // Detailed shinobi residence interior and second-floor study.
+            world.setBlockState(p.add(0,1,-3), Blocks.CRAFTING_TABLE.getDefaultState(), 2);
+            world.setBlockState(p.add(1,1,-3), Blocks.CHEST.getDefaultState(), 2);
+            for (int x=-3; x<=3; x+=2) {
+                world.setBlockState(p.add(x,3,4), Blocks.BOOKSHELF.getDefaultState(), 2);
+                world.setBlockState(p.add(x,6,3), Blocks.BOOKSHELF.getDefaultState(), 2);
+            }
+            world.setBlockState(p.add(-2,6,-2), Blocks.ENCHANTING_TABLE.getDefaultState(), 2);
+            world.setBlockState(p.add(2,6,-2), Blocks.ANVIL.getDefaultState(), 2);
+            world.setBlockState(p.add(0,6,2), Blocks.CARPET.getDefaultState(), 2);
+
+            // Three-tier overhanging eaves, decorative ridge and corner supports.
+            for (int layer=0; layer<3; layer++) {
+                int r=7-layer, y=7+layer;
+                for (int x=-r; x<=r; x++) for (int z=-r; z<=r; z++)
+                    if (Math.abs(x)==r || Math.abs(z)==r)
+                        world.setBlockState(p.add(x,y,z), layer==0 ? accent : roof, 2);
+            }
+            for (int x=-4; x<=4; x++) {
+                world.setBlockState(p.add(x,9,-2), roof, 2);
+                world.setBlockState(p.add(x,9,2), roof, 2);
+            }
+            for (int side : new int[]{-1,1}) for (int z=-4; z<=4; z+=2) {
+                world.setBlockState(p.add(side*6,3,z), Blocks.TORCH.getDefaultState(), 2);
+                world.setBlockState(p.add(side*6,6,z), fence, 2);
+                world.setBlockState(p.add(side*7,1,-6), Blocks.FENCE.getDefaultState(), 2);
+                world.setBlockState(p.add(side*7,2,-6), Blocks.GLOWSTONE.getDefaultState(), 2);
+                world.setBlockState(p.add(side*7,0,-7), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
+                world.setBlockState(p.add(side*7,0,-8), Blocks.RED_FLOWER.getDefaultState(), 2);
+            }
+            for (int side : new int[]{-1,1}) for (int z=-9; z<=-7; z++)
+                world.setBlockState(p.add(side*3,0,z), Blocks.STONEBRICK.getDefaultState(), 2);
         }
 
         private void spawnFukasakuInCentralResidence(World world, BlockPos center) {
@@ -558,7 +589,7 @@ public class AHZNBMiniVillages {
         private void buildVillageWalls(World world, BlockPos p, IBlockState wall, IBlockState accent) {
             // Rasterize the entire circular perimeter densely so adjacent wall blocks touch.
             // Leave only the centered northern gate opening; the gate towers close its edges.
-            int radius = 110;
+            int radius = 105;
             int previousX = 0, previousZ = -radius;
             for (int step = 1; step <= 3600; step++) {
                 double angle = Math.toRadians(step / 10.0);
@@ -570,7 +601,7 @@ public class AHZNBMiniVillages {
             }
             // Re-open a clean 11-block gate passage after rasterizing the ring.
             for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++)
-                world.setBlockToAir(p.add(x, y, -110));
+                world.setBlockToAir(p.add(x, y, -105));
         }
 
         private void drawWallSegment(World world, BlockPos p, int x1, int z1, int x2, int z2,
@@ -606,9 +637,9 @@ public class AHZNBMiniVillages {
             if (bijuuTypes.isEmpty()) return;
             Entity bijuu = bijuuTypes.get(random.nextInt(bijuuTypes.size())).newInstance(world);
             if (bijuu == null) return;
-            // Wall radius is 110 blocks; place the beast at radius 145 (35 blocks beyond the wall).
+            // Wall radius is 105 blocks; place the beast 35 blocks beyond the wall.
             double angle = random.nextDouble() * Math.PI * 2.0;
-            int distance = 145;
+            int distance = 140;
             BlockPos target = center.add((int)Math.round(Math.cos(angle) * distance), 0,
                                          (int)Math.round(Math.sin(angle) * distance));
             BlockPos spawn = world.getTopSolidOrLiquidBlock(target);
@@ -665,7 +696,7 @@ public class AHZNBMiniVillages {
         }
 
         private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
-            // Gate is centered directly on the northern wall line (z = -110).
+            // Gate is centered directly on the northern wall line (z = -105).
             for (int side : new int[]{-1, 1}) {
                 int x = side * 6;
                 for (int y = 0; y <= 10; y++) {
