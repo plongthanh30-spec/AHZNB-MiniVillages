@@ -346,6 +346,11 @@ public class AHZNBMiniVillages {
             buildWatchtower(world, p.add(78,0,-78), wall, roof, accent);
             buildWatchtower(world, p.add(-78,0,78), wall, roof, accent);
             buildWatchtower(world, p.add(78,0,78), wall, roof, accent);
+            // Four tall sea-watch towers stand beyond the defensive wall.
+            buildSeaWatchtower(world, p.add(0,0,-148), wall, roof, accent);
+            buildSeaWatchtower(world, p.add(148,0,0), wall, roof, accent);
+            buildSeaWatchtower(world, p.add(0,0,148), wall, roof, accent);
+            buildSeaWatchtower(world, p.add(-148,0,0), wall, roof, accent);
             buildVillageGarden(world, p, random);
             spawnBijuu(world, p, random);
             spawnVillageResidents(world, p, random);
@@ -490,6 +495,32 @@ public class AHZNBMiniVillages {
             for (int x : new int[]{-width-3,width+3}) for (int z : new int[]{-depth-3,depth+3}) {
                 world.setBlockState(p.add(x,6,z), accent, 2);
                 world.setBlockState(p.add(x,7,z), roof, 2);
+                world.setBlockState(p.add(x,8,z), accent, 2);
+            }
+            // Oversized second eaves, layered ridge crest and ornamental roof corners.
+            for (int layer=0; layer<3; layer++) {
+                int span=6-layer*2;
+                for (int x=-span; x<=span; x++) {
+                    world.setBlockState(p.add(x,9+layer, -span), roof, 2);
+                    world.setBlockState(p.add(x,9+layer, span), roof, 2);
+                }
+                for (int z=-span; z<=span; z++) {
+                    world.setBlockState(p.add(-span,9+layer,z), roof, 2);
+                    world.setBlockState(p.add(span,9+layer,z), roof, 2);
+                }
+            }
+            for (int x=-3; x<=3; x++) {
+                world.setBlockState(p.add(x,10,0), darkWood, 2);
+                if (Math.abs(x)==3) world.setBlockState(p.add(x,11,0), accent, 2);
+            }
+            // Deep carved-looking veranda rails and decorative corner lanterns.
+            for (int x=-width-1; x<=width+1; x+=2) {
+                world.setBlockState(p.add(x,2,depth+1), fence, 2);
+                world.setBlockState(p.add(x,2,-depth-1), fence, 2);
+            }
+            for (int x : new int[]{-width-2,width+2}) for (int z : new int[]{-depth-2,depth+2}) {
+                world.setBlockState(p.add(x,3,z), Blocks.GLOWSTONE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,4,z), roof, 2);
             }
             world.setBlockState(p.add(0,13,0), Blocks.GLOWSTONE.getDefaultState(), 2);
 
@@ -817,6 +848,49 @@ public class AHZNBMiniVillages {
             // Lit corners make towers visible at night.
             for (int x : new int[]{-2,2}) for (int z : new int[]{-2,2})
                 world.setBlockState(p.add(x,6,z), Blocks.TORCH.getDefaultState(), 2);
+        }
+
+        private void buildSeaWatchtower(World world, BlockPos p, IBlockState wall, IBlockState roof, IBlockState accent) {
+            // Tall coastal signal tower: stone sea base, enclosed lookout, beacon crown.
+            for (int x=-5; x<=5; x++) for (int z=-5; z<=5; z++) {
+                if (Math.abs(x)==5 || Math.abs(z)==5)
+                    world.setBlockState(p.add(x,0,z), Blocks.STONEBRICK.getDefaultState(), 2);
+                else
+                    world.setBlockState(p.add(x,0,z), Blocks.PLANKS.getStateFromMeta(1), 2);
+            }
+            for (int y=1; y<=15; y++) {
+                for (int x=-3; x<=3; x++) for (int z=-3; z<=3; z++) {
+                    if (Math.abs(x)==3 || Math.abs(z)==3) {
+                        boolean slit = y>=5 && y<=12 && ((x==0 && Math.abs(z)==3) || (z==0 && Math.abs(x)==3));
+                        world.setBlockState(p.add(x,y,z), slit ? Blocks.STAINED_GLASS_PANE.getStateFromMeta(3) :
+                            (y%4==0 ? accent : wall), 2);
+                    }
+                }
+            }
+            // Two projecting balconies and corner supports.
+            for (int level : new int[]{6,12}) {
+                for (int x=-5; x<=5; x++) for (int z=-5; z<=5; z++)
+                    if (Math.abs(x)==5 || Math.abs(z)==5)
+                        world.setBlockState(p.add(x,level,z), accent, 2);
+                for (int x : new int[]{-4,4}) for (int z : new int[]{-4,4})
+                    for (int y=level-2; y<level; y++)
+                        world.setBlockState(p.add(x,y,z), Blocks.OAK_FENCE.getDefaultState(), 2);
+            }
+            // Wide pagoda roof with three receding tiers.
+            for (int tier=0; tier<3; tier++) {
+                int radius=6-tier*2;
+                int y=16+tier*2;
+                for (int x=-radius; x<=radius; x++) for (int z=-radius; z<=radius; z++)
+                    if (Math.abs(x)>=radius-1 || Math.abs(z)>=radius-1)
+                        world.setBlockState(p.add(x,y,z), roof, 2);
+                for (int x : new int[]{-radius,radius}) for (int z : new int[]{-radius,radius})
+                    world.setBlockState(p.add(x,y+1,z), accent, 2);
+            }
+            for (int y=16; y<=22; y++)
+                world.setBlockState(p.add(0,y,0), accent, 2);
+            world.setBlockState(p.add(0,23,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            for (int x : new int[]{-2,2}) for (int z : new int[]{-2,2})
+                world.setBlockState(p.add(x,14,z), Blocks.TORCH.getDefaultState(), 2);
         }
 
         private void buildVillageGarden(World world, BlockPos p, Random random) {
