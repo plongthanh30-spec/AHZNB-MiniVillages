@@ -449,6 +449,38 @@ public class AHZNBMiniVillages {
             }
             for (int z=-2;z<=2;z++) world.setBlockState(p.add(0,10,z), accent, 2);
 
+            // Decorative Japanese townhouse details: second-level balcony rails,
+            // corner brackets, roof-end ornaments and warm lanterns.
+            for (int x=-5;x<=5;x++) {
+                if (x%2==0) {
+                    world.setBlockState(p.add(x,4,8), Blocks.OAK_FENCE.getDefaultState(), 2);
+                    world.setBlockState(p.add(x,4,-8), Blocks.OAK_FENCE.getDefaultState(), 2);
+                }
+            }
+            for (int z=-5;z<=5;z+=2) {
+                world.setBlockState(p.add(8,4,z), Blocks.OAK_FENCE.getDefaultState(), 2);
+                world.setBlockState(p.add(-8,4,z), Blocks.OAK_FENCE.getDefaultState(), 2);
+            }
+            for (int x : new int[]{-7,7}) for (int z : new int[]{-7,7}) {
+                for (int y=5;y<=7;y++)
+                    world.setBlockState(p.add(x,y,z), beam, 2);
+                world.setBlockState(p.add(x,8,z), accent, 2);
+            }
+            // Hanging lantern-like lights beneath the eaves.
+            for (int x : new int[]{-5,0,5}) for (int z : new int[]{-5,5}) {
+                world.setBlockState(p.add(x,4,z), Blocks.FENCE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,3,z), Blocks.GLOWSTONE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,2,z), Blocks.TRAPDOOR.getDefaultState(), 2);
+            }
+            // Decorative roof ridge and raised corner tips.
+            for (int x=-4;x<=4;x++) {
+                world.setBlockState(p.add(x,11,0), x%2==0 ? accent : beam, 2);
+            }
+            for (int x : new int[]{-9,9}) for (int z : new int[]{-9,9}) {
+                world.setBlockState(p.add(x,6,z), accent, 2);
+                world.setBlockState(p.add(x,7,z), roof, 2);
+            }
+
             // Interior: clear central path, cozy furnishings, and reachable treasure chest.
             for (int z=-5;z<=5;z++) {
                 world.setBlockToAir(p.add(0,1,z));
