@@ -902,21 +902,35 @@ public class AHZNBMiniVillages {
             for (int x=-5; x<=5; x++) for (int z=-5; z<=5; z++)
                 world.setBlockState(center.add(x,-1,z),
                     (Math.abs(x)==5 || Math.abs(z)==5) ? roof : Blocks.STONEBRICK.getDefaultState(),2);
-            // Use AHZNB-registered ninja entities where the mod exposes suitable types.
-            java.util.List<EntityEntry> ninjaTypes = new java.util.ArrayList<EntityEntry>();
-            for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
-                ResourceLocation id=entry.getRegistryName();
-                if (id!=null && "narutomod".equals(id.getResourceDomain())) {
-                    String name=id.getResourcePath().toLowerCase();
-                    if (name.contains("ninja") || name.contains("shinobi")) ninjaTypes.add(entry);
-                }
-            }
-            for (int i=0; i<10 && !ninjaTypes.isEmpty(); i++) {
-                Entity npc=ninjaTypes.get(i % ninjaTypes.size()).newInstance(world);
-                if (npc==null) continue;
-                BlockPos at=world.getTopSolidOrLiquidBlock(center.add((i%5-2)*5,0,(i/5==0?-8:8)));
+            // Ten real Uchiha NPCs from Dynamic Dojutsu. Most are ordinary clan members;
+            // named/elite Uchiha are deliberately rare.
+            String[] uchihaRoster = {
+                "dynamicdojutsu:default_uchiha", "dynamicdojutsu:default_uchiha",
+                "dynamicdojutsu:default_uchiha", "dynamicdojutsu:default_uchiha",
+                "dynamicdojutsu:default_uchiha", "dynamicdojutsu:default_uchiha",
+                "dynamicdojutsu:default_uchiha", "dynamicdojutsu:naka_uchiha",
+                "dynamicdojutsu:rai_uchiha", "dynamicdojutsu:baru_uchiha"
+            };
+            for (int i=0; i<uchihaRoster.length; i++) {
+                EntityEntry entry = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(uchihaRoster[i]));
+                if (entry == null) continue; // Dynamic Dojutsu is an optional dependency.
+                Entity npc = entry.newInstance(world);
+                if (npc == null) continue;
+                BlockPos at = world.getTopSolidOrLiquidBlock(center.add((i%5-2)*5,0,(i/5==0?-8:8)));
                 npc.setPosition(at.getX()+0.5,at.getY(),at.getZ()+0.5);
                 world.spawnEntity(npc);
+            }
+            // One elite Uchiha may appear instead of one ordinary clan member (10% chance).
+            if (random.nextInt(10) == 0) {
+                EntityEntry elite = ForgeRegistries.ENTITIES.getValue(new ResourceLocation("dynamicdojutsu:madara_uchiha"));
+                if (elite != null) {
+                    Entity npc = elite.newInstance(world);
+                    if (npc != null) {
+                        BlockPos at = world.getTopSolidOrLiquidBlock(center.add(0,0,13));
+                        npc.setPosition(at.getX()+0.5,at.getY(),at.getZ()+0.5);
+                        world.spawnEntity(npc);
+                    }
+                }
             }
         }
 
