@@ -425,17 +425,23 @@ public class AHZNBMiniVillages {
             for (int x : new int[]{-4,4}) for (int y=2;y<=4;y++)
                 world.setBlockState(p.add(x,y,8), beam, 2);
 
-            // Distinctive pagoda roof: three clean, stepped eaves with raised corners.
+            // Three complete, broad pagoda eaves. Each tier is a continuous roof
+            // surface with a two-block-deep outer band; no isolated corner spikes,
+            // so the roof cannot look clipped or lose its visible rings.
             for (int tier=0;tier<3;tier++) {
                 int radius=9-tier*2;
                 int y=5+tier*2;
                 for (int x=-radius;x<=radius;x++) for (int z=-radius;z<=radius;z++) {
-                    if (Math.abs(x)>=radius-1 || Math.abs(z)>=radius-1)
+                    boolean outerBand = Math.abs(x)>=radius-1 || Math.abs(z)>=radius-1;
+                    if (outerBand || tier==2 || (Math.abs(x)<=radius-2 && Math.abs(z)<=radius-2 && (x+z)%3==0))
                         world.setBlockState(p.add(x,y,z), roof, 2);
                 }
-                for (int x : new int[]{-radius,radius}) for (int z : new int[]{-radius,radius}) {
-                    world.setBlockState(p.add(x,y+1,z), beam, 2);
-                    world.setBlockState(p.add(x,y+2,z), roof, 2);
+                // Continuous raised trim around all four sides, not just four corners.
+                for (int n=-radius+1;n<radius;n++) {
+                    world.setBlockState(p.add(n,y+1,-radius), beam, 2);
+                    world.setBlockState(p.add(n,y+1,radius), beam, 2);
+                    world.setBlockState(p.add(-radius,y+1,n), beam, 2);
+                    world.setBlockState(p.add(radius,y+1,n), beam, 2);
                 }
             }
             for (int x=-3;x<=3;x++) {
