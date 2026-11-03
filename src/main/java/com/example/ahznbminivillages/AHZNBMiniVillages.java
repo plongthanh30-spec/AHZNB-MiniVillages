@@ -349,6 +349,12 @@ public class AHZNBMiniVillages {
             buildSeaWatchtower(world, p.add(0,0,148), wall, roof, accent);
             buildSeaWatchtower(world, p.add(-148,0,0), wall, roof, accent);
             buildVillageGarden(world, p, random);
+            // Separate academy near the inner side of the southern wall.
+            buildNinjutsuAcademy(world, p.add(-52, 0, 66), wall, roof, accent, random);
+            // A distinct Uchiha district, outside the main village wall.
+            buildUchihaDistrict(world, p.add(300, 0, 0), random);
+            // Rare chakra tree: one chance in eight per generated ninja village.
+            if (random.nextInt(8) == 0) buildChakraTree(world, p.add(52, 0, 55), random);
             spawnBijuu(world, p, random);
             spawnVillageResidents(world, p, random);
         }
@@ -839,6 +845,98 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(x,4,z), Blocks.GLOWSTONE.getDefaultState(), 2);
                 world.setBlockState(p.add(x+1,0,z), Blocks.YELLOW_FLOWER.getDefaultState(), 2);
                 world.setBlockState(p.add(x-1,0,z), Blocks.RED_FLOWER.getDefaultState(), 2);
+            }
+        }
+
+        private void buildNinjutsuAcademy(World world, BlockPos p, IBlockState wall, IBlockState roof,
+                                             IBlockState accent, Random random) {
+            // Large two-storey academy placed beside the inner village wall.
+            for (int x=-12; x<=12; x++) for (int z=-15; z<=15; z++) {
+                world.setBlockState(p.add(x,-1,z), Blocks.STONEBRICK.getDefaultState(), 2);
+                world.setBlockState(p.add(x,0,z), Blocks.PLANKS.getDefaultState(), 2);
+            }
+            for (int y=1; y<=8; y++) for (int x=-11; x<=11; x++) for (int z=-14; z<=14; z++) {
+                if (Math.abs(x)==11 || Math.abs(z)==14)
+                    world.setBlockState(p.add(x,y,z), wall, 2);
+            }
+            // Clear interior and create a second floor with an open central hall.
+            for (int y=1; y<=7; y++) for (int x=-10; x<=10; x++) for (int z=-13; z<=13; z++)
+                world.setBlockToAir(p.add(x,y,z));
+            for (int x=-10; x<=10; x++) for (int z=-13; z<=13; z++)
+                if (Math.abs(x)==10 || Math.abs(z)==13)
+                    for (int y=1; y<=8; y++) world.setBlockState(p.add(x,y,z), wall, 2);
+            for (int x=-10; x<=10; x++) for (int z=-13; z<=13; z++)
+                world.setBlockState(p.add(x,4,z), Blocks.PLANKS.getDefaultState(), 2);
+            for (int x=-12; x<=12; x++) for (int z=-15; z<=15; z++)
+                if (Math.abs(x)>=10 || Math.abs(z)>=13)
+                    world.setBlockState(p.add(x,9,z), roof, 2);
+            for (int x=-8; x<=8; x+=4) {
+                world.setBlockState(p.add(x,2,-14), Blocks.GLASS_PANE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,6,-14), Blocks.GLASS_PANE.getDefaultState(), 2);
+            }
+            // Main entrance, sign-like crest and training posts.
+            for (int y=1; y<=3; y++) for (int x=-2; x<=2; x++)
+                world.setBlockToAir(p.add(x,y,-14));
+            world.setBlockState(p.add(0,10,0), accent, 2);
+            for (int x=-6; x<=6; x+=3) {
+                world.setBlockState(p.add(x,1,8), Blocks.FENCE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,2,8), Blocks.FENCE.getDefaultState(), 2);
+            }
+            placeLootChest(world, p.add(-8,1,-10), random);
+            placeLootChest(world, p.add(8,1,-10), random);
+            placeLootChest(world, p.add(-8,5,10), random);
+            placeLootChest(world, p.add(8,5,10), random);
+            placeLootChest(world, p.add(0,1,11), random);
+        }
+
+        private void buildUchihaDistrict(World world, BlockPos center, Random random) {
+            IBlockState dark = Blocks.PLANKS.getStateFromMeta(1);
+            IBlockState roof = Blocks.STAINED_HARDENED_CLAY.getStateFromMeta(14);
+            int[][] houses = {{-25,-20},{0,-27},{25,-20},{-18,18},{18,18}};
+            for (int i=0; i<houses.length; i++) {
+                BlockPos h = center.add(houses[i][0],0,houses[i][1]);
+                buildNinjaHouse(world,h,dark,roof,Blocks.LOG.getStateFromMeta(1),random,2);
+                placeLootChest(world,h.add(0,1,0),random);
+            }
+            // Uchiha district emblem at its own central square.
+            for (int x=-5; x<=5; x++) for (int z=-5; z<=5; z++)
+                world.setBlockState(center.add(x,-1,z),
+                    (Math.abs(x)==5 || Math.abs(z)==5) ? roof : Blocks.STONEBRICK.getDefaultState(),2);
+            // Use AHZNB-registered ninja entities where the mod exposes suitable types.
+            java.util.List<EntityEntry> ninjaTypes = new java.util.ArrayList<EntityEntry>();
+            for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
+                ResourceLocation id=entry.getRegistryName();
+                if (id!=null && "narutomod".equals(id.getResourceDomain())) {
+                    String name=id.getResourcePath().toLowerCase();
+                    if (name.contains("ninja") || name.contains("shinobi")) ninjaTypes.add(entry);
+                }
+            }
+            for (int i=0; i<10 && !ninjaTypes.isEmpty(); i++) {
+                Entity npc=ninjaTypes.get(i % ninjaTypes.size()).newInstance(world);
+                if (npc==null) continue;
+                BlockPos at=world.getTopSolidOrLiquidBlock(center.add((i%5-2)*5,0,(i/5==0?-8:8)));
+                npc.setPosition(at.getX()+0.5,at.getY(),at.getZ()+0.5);
+                world.spawnEntity(npc);
+            }
+        }
+
+        private void buildChakraTree(World world, BlockPos p, Random random) {
+            // Rare landmark tree; its fruit is a renamed golden apple, not an invented mod ID.
+            for (int y=0; y<9; y++)
+                world.setBlockState(p.add(0,y,0), Blocks.LOG.getDefaultState(), 2);
+            for (int y=6; y<=11; y++) {
+                int radius = y==11 ? 2 : (y==10 ? 4 : 5);
+                for (int x=-radius; x<=radius; x++) for (int z=-radius; z<=radius; z++)
+                    if (x*x+z*z <= radius*radius+2 && !(x==0 && z==0))
+                        world.setBlockState(p.add(x,y,z), Blocks.LEAVES.getDefaultState(), 2);
+            }
+            world.setBlockState(p.add(0,12,0), Blocks.GLOWSTONE.getDefaultState(), 2);
+            BlockPos chestPos=p.add(2,1,0);
+            world.setBlockState(chestPos,Blocks.CHEST.getDefaultState(),2);
+            if (world.getTileEntity(chestPos) instanceof TileEntityChest) {
+                ItemStack fruit=new ItemStack(Items.GOLDEN_APPLE,1);
+                fruit.setStackDisplayName("Chakra Fruit");
+                ((TileEntityChest)world.getTileEntity(chestPos)).setInventorySlotContents(13,fruit);
             }
         }
 
