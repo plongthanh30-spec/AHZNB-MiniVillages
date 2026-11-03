@@ -621,6 +621,17 @@ public class AHZNBMiniVillages {
                 world.setBlockState(p.add(x+1,0,depth+8), Blocks.RED_FLOWER.getDefaultState(), 2);
             }
 
+            // Two-block-high central aisle stays clear from the entrance to the loot area.
+            for (int z=-4; z<=depth-1; z++) {
+                world.setBlockToAir(p.add(0,1,z));
+                world.setBlockToAir(p.add(0,2,z));
+            }
+            // Keep standing space beside the chest clear for easy access.
+            for (int x=1; x<=2; x++) {
+                world.setBlockToAir(p.add(x,1,-3));
+                world.setBlockToAir(p.add(x,2,-3));
+            }
+
             // Interior furnishings and guaranteed Naruto loot chest.
             world.setBlockState(p.add(-3,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
             world.setBlockState(p.add(-2,1,-2), Blocks.BOOKSHELF.getDefaultState(), 2);
@@ -1037,31 +1048,39 @@ public class AHZNBMiniVillages {
         }
 
         private void fillChest(TileEntityChest chest, Random random) {
-            // Each chest gets 10-15 stacks of useful supplies.
+            // Exactly 20 occupied slots: 10 vanilla, 5 AHZNB and 5 Dynamic Dojutsu.
             Item[] commonLoot = { Items.BREAD, Items.COOKED_BEEF, Items.COOKED_CHICKEN,
-                Items.CARROT, Items.POTATO, Items.APPLE, Items.ARROW, Items.STICK,
-                Items.STRING, Items.LEATHER, Items.COAL, Items.IRON_INGOT,
-                Items.GOLD_INGOT, Items.EXPERIENCE_BOTTLE, Items.PAPER, Items.BOOK,
-                Items.STICK, Items.BONE };
-            int stackCount = 10 + random.nextInt(6);
-            for (int i=0; i<stackCount; i++) {
-                Item item = commonLoot[random.nextInt(commonLoot.length)];
+                Items.CARROT, Items.POTATO, Items.APPLE, Items.ARROW, Items.STRING,
+                Items.IRON_INGOT, Items.GOLD_INGOT };
+            for (Item item : commonLoot) {
                 int amount = 1 + random.nextInt(Math.max(1, Math.min(4, item.getItemStackLimit())));
                 put(chest, new ItemStack(item, amount), random);
             }
-            // Up to three bonus Naruto items, when valid AHZNB items are configured.
-            int added = 0;
-            for (String raw : ahznbLoot) {
-                if (added >= 3 || random.nextInt(100) >= 10) continue;
+            String[] dynamicLoot = {
+                "dynamicdojutsu:typhoon_release", "dynamicdojutsu:dark_release",
+                "dynamicdojutsu:steel_release", "dynamicdojutsu:izanagi_scroll",
+                "dynamicdojutsu:totsuka_blade"
+            };
+            addConfiguredLoot(chest, ahznbLoot, 5, random);
+            addConfiguredLoot(chest, dynamicLoot, 5, random);
+        }
+
+        private void addConfiguredLoot(TileEntityChest chest, String[] loot, int count, Random random) {
+            java.util.List<ItemStack> valid = new java.util.ArrayList<ItemStack>();
+            for (String raw : loot) {
                 String[] parts = raw.trim().split("@");
+                if (parts.length == 0 || parts[0].isEmpty()) continue;
                 Item item = Item.REGISTRY.getObject(new ResourceLocation(parts[0]));
-                if (item != null && item != Items.AIR) {
-                    int meta = 0;
-                    if (parts.length > 1) { try { meta = Integer.parseInt(parts[1]); } catch (NumberFormatException ignored) {} }
-                    put(chest, new ItemStack(item, 1, meta), random);
-                    added++;
+                if (item == null || item == Items.AIR) continue;
+                int meta = 0;
+                if (parts.length > 1) {
+                    try { meta = Integer.parseInt(parts[1]); } catch (NumberFormatException ignored) {}
                 }
+                valid.add(new ItemStack(item, 1, meta));
             }
+            java.util.Collections.shuffle(valid, random);
+            for (int i=0; i<Math.min(count, valid.size()); i++)
+                put(chest, valid.get(i), random);
         }
         private void put(TileEntityChest chest, ItemStack stack, Random random) {
             for (int i = 0; i < 20; i++) {
