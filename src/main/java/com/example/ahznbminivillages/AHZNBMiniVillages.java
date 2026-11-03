@@ -468,7 +468,7 @@ public class AHZNBMiniVillages {
             }
             // Hanging lantern-like lights beneath the eaves.
             for (int x : new int[]{-5,0,5}) for (int z : new int[]{-5,5}) {
-                world.setBlockState(p.add(x,4,z), Blocks.FENCE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,4,z), Blocks.OAK_FENCE.getDefaultState(), 2);
                 world.setBlockState(p.add(x,3,z), Blocks.GLOWSTONE.getDefaultState(), 2);
                 world.setBlockState(p.add(x,2,z), Blocks.TRAPDOOR.getDefaultState(), 2);
             }
