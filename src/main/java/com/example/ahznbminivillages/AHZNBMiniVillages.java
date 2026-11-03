@@ -879,8 +879,8 @@ public class AHZNBMiniVillages {
                 world.setBlockToAir(p.add(x,y,-14));
             world.setBlockState(p.add(0,10,0), accent, 2);
             for (int x=-6; x<=6; x+=3) {
-                world.setBlockState(p.add(x,1,8), Blocks.FENCE.getDefaultState(), 2);
-                world.setBlockState(p.add(x,2,8), Blocks.FENCE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,1,8), Blocks.OAK_FENCE.getDefaultState(), 2);
+                world.setBlockState(p.add(x,2,8), Blocks.OAK_FENCE.getDefaultState(), 2);
             }
             placeLootChest(world, p.add(-8,1,-10), random);
             placeLootChest(world, p.add(8,1,-10), random);
