@@ -199,7 +199,7 @@ public class AHZNBMiniVillages {
             if (world.isRemote || world.provider.getDimension() != 0) return;
 
             // 2.5x the previous attempt rate (256 -> 640).
-            double chancePerChunk = Math.min(1.0, 1200.0 / (spacingBlocks * (double) spacingBlocks));
+            double chancePerChunk = Math.min(1.0, 2400.0 / (spacingBlocks * (double) spacingBlocks));
             if (random.nextDouble() >= chancePerChunk) return;
 
             int x = chunkX * 16 + 3 + random.nextInt(10);
@@ -308,14 +308,11 @@ public class AHZNBMiniVillages {
                     break;
             }
 
-            // Eleven varied homes around a larger central residence.
+            // Fifteen homes; the central residence is the sixteenth main building.
             int[][] homes = {
-                // Original eleven homes
                 {-29,-27}, {-9,-34}, {14,-34}, {34,-22}, {37,2},
-                {29,29}, {6,37}, {-19,32}, {-37,12}, {-35,-13}, {0,42},
-                // Ten additional homes around the outer residential ring
-                {-65,-45}, {-42,-68}, {-5,-72}, {38,-66}, {68,-42},
-                {72,8}, {55,58}, {12,73}, {-38,66}, {-72,28},
+                {29,29}, {6,37}, {-19,32}, {-37,12}, {-35,-13},
+                {-65,-45}, {-42,-68}, {-5,-72}, {38,-66}, {68,-42}
             };
             for (int i=0; i<homes.length; i++) {
                 BlockPos house = p.add(homes[i][0], 0, homes[i][1]);
@@ -340,7 +337,7 @@ public class AHZNBMiniVillages {
             // A more legible village center: stone plaza, radial lanes and decorative lamps.
             buildVillagePlaza(world, p, wall, accent);
             buildVillageWalls(world, p, wall, accent);
-            buildVillageGate(world, p.add(0,0,-105), accent, roof);
+            buildVillageGate(world, p.add(0,0,-92), accent, roof);
             // Four watchtowers reinforce the settlement's defensive silhouette.
             buildWatchtower(world, p.add(-78,0,-78), wall, roof, accent);
             buildWatchtower(world, p.add(78,0,-78), wall, roof, accent);
@@ -573,7 +570,7 @@ public class AHZNBMiniVillages {
         private void buildVillageWalls(World world, BlockPos p, IBlockState wall, IBlockState accent) {
             // Rasterize the entire circular perimeter densely so adjacent wall blocks touch.
             // Leave only the centered northern gate opening; the gate towers close its edges.
-            int radius = 105;
+            int radius = 92;
             int previousX = 0, previousZ = -radius;
             for (int step = 1; step <= 3600; step++) {
                 double angle = Math.toRadians(step / 10.0);
@@ -583,11 +580,9 @@ public class AHZNBMiniVillages {
                 previousX = x;
                 previousZ = z;
             }
-            // Re-open a clean 11-block-wide, two-block-deep gate passage.
-            for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++) {
-                world.setBlockToAir(p.add(x, y, -105));
-                world.setBlockToAir(p.add(x, y, -104));
-            }
+            // Re-open a clean 11-block-wide passage through the one-block wall.
+            for (int x = -5; x <= 5; x++) for (int y = 0; y <= 6; y++)
+                world.setBlockToAir(p.add(x, y, -92));
         }
 
         private void drawWallSegment(World world, BlockPos p, int x1, int z1, int x2, int z2,
@@ -597,24 +592,20 @@ public class AHZNBMiniVillages {
                 double t = steps == 0 ? 0.0 : i / (double)steps;
                 int x = (int)Math.round(x1 + (x2 - x1) * t);
                 int z = (int)Math.round(z1 + (z2 - z1) * t);
-                // Two-block-thick continuous wall, seven blocks tall (Y=0..6).
-                // The second course is offset inward to form a solid defensive wall.
+                // One-block-thick continuous wall, seven blocks tall (Y=0..6).
                 for (int y = 0; y <= 6; y++) {
                     IBlockState course = (y == 6) ? accent : wall;
                     world.setBlockState(p.add(x, y, z), course, 2);
-                    world.setBlockState(p.add(x, y, z + (z < 0 ? 1 : -1)), course, 2);
                 }
                 // Stone merlons along the top give the wall a fortified silhouette.
                 if ((x + z) % 5 == 0) {
                     world.setBlockState(p.add(x, 7, z), accent, 2);
-                    world.setBlockState(p.add(x, 7, z + (z < 0 ? 1 : -1)), accent, 2);
                 }
             }
         }
 
         private void spawnBijuu(World world, BlockPos center, Random random) {
-            // 100% chance per generated village: always attempt one tailed-beast spawn.
-            // Spawn outside the wall; never spawn the Ten Tails.
+            // 100% chance per generated village: spawn one tailed beast at the village center.
             java.util.List<EntityEntry> bijuuTypes = new java.util.ArrayList<EntityEntry>();
             for (EntityEntry entry : ForgeRegistries.ENTITIES.getValuesCollection()) {
                 ResourceLocation id = entry.getRegistryName();
@@ -631,12 +622,8 @@ public class AHZNBMiniVillages {
             if (bijuuTypes.isEmpty()) return;
             Entity bijuu = bijuuTypes.get(random.nextInt(bijuuTypes.size())).newInstance(world);
             if (bijuu == null) return;
-            // Wall radius is 105 blocks; place the beast 35 blocks beyond the wall.
-            double angle = random.nextDouble() * Math.PI * 2.0;
-            int distance = 140;
-            BlockPos target = center.add((int)Math.round(Math.cos(angle) * distance), 0,
-                                         (int)Math.round(Math.sin(angle) * distance));
-            BlockPos spawn = world.getTopSolidOrLiquidBlock(target);
+            // Place the beast at the central plaza, not outside the defensive wall.
+            BlockPos spawn = world.getTopSolidOrLiquidBlock(center);
             bijuu.setPosition(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
             world.spawnEntity(bijuu);
         }
@@ -690,7 +677,7 @@ public class AHZNBMiniVillages {
         }
 
         private void buildVillageGate(World world, BlockPos p, IBlockState accent, IBlockState roof) {
-            // Gate is centered directly on the northern wall line (z = -105).
+            // Gate is centered directly on the northern wall line (z = -92).
             for (int side : new int[]{-1, 1}) {
                 int x = side * 6;
                 for (int y = 0; y <= 10; y++) {
