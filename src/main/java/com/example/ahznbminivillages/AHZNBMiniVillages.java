@@ -425,24 +425,23 @@ public class AHZNBMiniVillages {
             for (int x : new int[]{-4,4}) for (int y=2;y<=4;y++)
                 world.setBlockState(p.add(x,y,8), beam, 2);
 
-            // Three complete, broad pagoda eaves. Each tier is a continuous roof
-            // surface with a two-block-deep outer band; no isolated corner spikes,
-            // so the roof cannot look clipped or lose its visible rings.
-            for (int tier=0;tier<3;tier++) {
-                int radius=9-tier*2;
-                int y=5+tier*2;
+            // Solid stepped pagoda roof: every course is filled, and each
+            // successive course shrinks by one block on all sides. This removes
+            // the empty gaps between the visible rings and uses only 1.12.2 blocks.
+            for (int step=0;step<6;step++) {
+                int radius=9-step;
+                int y=5+step;
+                IBlockState course = (step==0 || step==2 || step==4) ? roof : slab;
                 for (int x=-radius;x<=radius;x++) for (int z=-radius;z<=radius;z++) {
-                    boolean outerBand = Math.abs(x)>=radius-1 || Math.abs(z)>=radius-1;
-                    if (outerBand || tier==2 || (Math.abs(x)<=radius-2 && Math.abs(z)<=radius-2 && (x+z)%3==0))
-                        world.setBlockState(p.add(x,y,z), roof, 2);
+                    world.setBlockState(p.add(x,y,z), course, 2);
                 }
-                // Continuous raised trim around all four sides, not just four corners.
-                for (int n=-radius+1;n<radius;n++) {
-                    world.setBlockState(p.add(n,y+1,-radius), beam, 2);
-                    world.setBlockState(p.add(n,y+1,radius), beam, 2);
-                    world.setBlockState(p.add(-radius,y+1,n), beam, 2);
-                    world.setBlockState(p.add(radius,y+1,n), beam, 2);
-                }
+            }
+            // Raised timber trim follows the outside edge of the broad eaves.
+            for (int n=-8;n<=8;n++) {
+                world.setBlockState(p.add(n,6,-9), beam, 2);
+                world.setBlockState(p.add(n,6,9), beam, 2);
+                world.setBlockState(p.add(-9,6,n), beam, 2);
+                world.setBlockState(p.add(9,6,n), beam, 2);
             }
             for (int x=-3;x<=3;x++) {
                 world.setBlockState(p.add(x,10,0), beam, 2);
